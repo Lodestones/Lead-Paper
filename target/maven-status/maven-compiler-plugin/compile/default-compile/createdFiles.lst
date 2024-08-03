@@ -1,0 +1,9 @@
+to\lodestone\lead\LeadPaper.class
+to\lodestone\lead\command\TeamCommand.class
+to\lodestone\lead\team\Team.class
+to\lodestone\lead\team\TeamMember.class
+to\lodestone\lead\listener\WorldListener.class
+to\lodestone\lead\menu\TeamListMenu.class
+to\lodestone\lead\listener\ChatListener.class
+to\lodestone\lead\command\TeamMessageCommand.class
+to\lodestone\lead\listener\PlayerListener.class

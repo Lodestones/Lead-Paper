@@ -1,0 +1,53 @@
+version: 1
+max_team_size: 5
+allow_friendly_fire: true
+name_tag_visbility: ALWAYS # ALWAYS, NEVER, HIDE_FOR_OTHER_TEAMS, or HIDE_FOR_OWN_TEAM
+
+######################################################################
+#                             Hex Colors                             #
+#       A list of colors that Lead picks to create team colors.      #
+#                   Add colors by using hex values.                  #
+#             Find colors at: https://www.color-hex.com/             #
+######################################################################
+available_hex_colors:
+  - "#C36BFF"
+  - "#FF2DEA"
+  - "#FF0569"
+  - "#FF2600"
+  - "#FF9307"
+  - "#FFFF02"
+  - "#6EFF07"
+  - "#89FF89"
+  - "#5BFFEE"
+  - "#6D68FF"
+  - "#F59EFF"
+  - "#FFBA8C"
+  - "#FFF9BC"
+  - "#B7FFC3"
+  - "#89D3FF"
+  - "#D260FF"
+  - "#FF665B"
+  - "#7FFFBB"
+  - "#32B0FF"
+
+######################################################################
+#                       Command Permission                           #
+#   Setting the permission to "null" will make the command public.   #
+######################################################################
+commands:
+  kick: "lodestone.lead.commands.kick"
+  leave: "lodestone.lead.commands.leave"
+  disband: null
+  invite: null
+  create: null
+  join: null
+  teleport: "lodestone.lead.command.teleport"
+  chat: null
+  merge: "lodestone.lead.commands.merge"
+  place: "lodestone.lead.commands.place"
+  remove: "lodestone.lead.commands.remove"
+  delete: "lodestone.lead.commands.delete"
+  setname: "lodestone.lead.commands.setname"
+  setcolor: "lodestone.lead.commands.setcolor"
+  list: null
+  help: null
