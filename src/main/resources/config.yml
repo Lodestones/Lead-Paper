@@ -1,7 +1,17 @@
-version: 1
+#######################################################################
+#                       General Configuration                         #
+#  DO NOT TOUCH VERSION! YOU MAY BREAK YOUR CONFIGURATION IF YOU DO!  #
+#######################################################################
+version: 2
 max_team_size: 5
-allow_friendly_fire: true
-name_tag_visbility: ALWAYS # ALWAYS, NEVER, HIDE_FOR_OTHER_TEAMS, or HIDE_FOR_OWN_TEAM
+
+#########################################################################
+#                            Donation Key                               #
+# To give our supporters perks, if you wish to remove the join message, #
+#  you can input your ko-fi email here and if you have a membership of  #
+#    vip or above, your members will no longer receive join messages.   #
+#########################################################################
+donation_key: null
 
 ######################################################################
 #                             Hex Colors                             #
@@ -43,11 +53,14 @@ commands:
   join: null
   teleport: "lodestone.lead.command.teleport"
   chat: null
+  nametag: "lodestone.lead.commands.nametag"
+  collidable: "lodestone.lead.commands.collidable"
   merge: "lodestone.lead.commands.merge"
   place: "lodestone.lead.commands.place"
   remove: "lodestone.lead.commands.remove"
   delete: "lodestone.lead.commands.delete"
-  setname: "lodestone.lead.commands.setname"
-  setcolor: "lodestone.lead.commands.setcolor"
+  id: "lodestone.lead.commands.id"
+  display_name: "lodestone.lead.commands.display_name"
+  color: "lodestone.lead.commands.setcolor"
   list: null
   help: null

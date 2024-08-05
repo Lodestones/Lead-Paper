@@ -1,7 +1,7 @@
 package to.lodestone.lead.listener;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -32,15 +32,15 @@ public class ChatListener implements Listener {
 
             if (teamMember.isInTeamChat()) {
                 event.setViewers(team.getMembers().stream().map(ITeamMember::getUniqueId).toList());
-                event.prefix(MiniMessageUtil.deserialize("<green><bold>TEAM »<reset><%s> [%s]", team.getColor(), team.getName()));
+                event.prefix(MiniMessageUtil.deserialize("<green><bold>TEAM »<reset><%s> %s", team.getColor(), team.getName()));
                 event.playerColor(team.getColor());
             } else {
-                Component newPrefix = MiniMessageUtil.deserialize("<%s>[%s]", team.getColor(), team.getName());
+                Component newPrefix = MiniMessageUtil.deserialize("<%s>%s", team.getColor(), team.getName());
                 event.playerColor(team.getColor());
                 if (event.prefix() == null)
                     event.prefix(newPrefix);
                 else
-                    event.prefix(event.prefix().append(Component.text(MiniMessageUtil.serialize(event.prefix()).isEmpty() ? "" : " ").append(newPrefix)));
+                    event.prefix(event.prefix().append(Component.empty().decoration(TextDecoration.BOLD, false)).append(Component.text(MiniMessageUtil.serialize(event.prefix()).isEmpty() ? "" : " ").append(newPrefix)));
             }
 
             event.setModified(true);

@@ -2,7 +2,6 @@ package to.lodestone.lead;
 
 import dev.jorel.commandapi.CommandAPI;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -10,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.NameTagVisibility;
 import org.bukkit.scoreboard.Scoreboard;
+import org.jetbrains.annotations.NotNull;
 import to.lodestone.bookshelfapi.BookshelfAPI;
 import to.lodestone.bookshelfapi.IBookshelfAPI;
 import to.lodestone.bookshelfapi.api.Configuration;
@@ -38,8 +38,9 @@ import java.util.*;
 
 public final class LeadPaper extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "beta-v1.1.0";
-    private static final int CONFIG_VERSION = 1;
+    public static final String VERSION = "beta-v1.1.1";
+    private static final int CONFIG_VERSION = 2;
+    private static final String TEAMLESS_ID = "TEAMLESS";
 
     private List<ITeam> teams;
     public static Random SEED = new Random();
@@ -87,13 +88,18 @@ public final class LeadPaper extends JavaPlugin implements ILeadAPI {
                     members.add(new TeamMember(UUID.fromString(uniqueId), ((String) map.get(uniqueId))));
                 }
             }
+
             Team team = new Team(
+                    section.getString("id", section.getString("name")),
                     section.getString("name"),
                     section.getString("color", "#FFFFFF"),
                     UUID.fromString(teamUniqueId),
                     UUID.fromString(Objects.requireNonNull(section.getString("leaderUniqueId"))),
                     members,
-                    new ArrayList<>(section.getStringList("invitations").stream().map(UUID::fromString).toList())
+                    new ArrayList<>(section.getStringList("invitations").stream().map(UUID::fromString).toList()),
+                    EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
+                    EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
+                    section.getBoolean("is_friendly_fire_allowed", false)
             );
             teams.add(team);
         }
@@ -152,96 +158,138 @@ public final class LeadPaper extends JavaPlugin implements ILeadAPI {
 
     @Nullable
     public ITeam getTeam(int number) {
-        return teams.stream().filter(team -> team.getName().matches("[0-9]*") && team.getNameAsNumber() == number).findFirst().orElse(null);
+        return teams.stream().filter(team -> team.getId().matches("[0-9]*") && team.getNameAsNumber() == number).findFirst().orElse(null);
     }
 
-    public @Nullable ITeam getTeam(String name) {
-        return teams.stream().filter(team -> team.getName().equals(name)).findFirst().orElse(null);
+    public @Nullable ITeam getTeam(String id) {
+        return teams.stream().filter(team -> team.getId().equals(id)).findFirst().orElse(null);
     }
 
     public int getAvailableTeamNumber() {
         List<Integer> numbers = new ArrayList<>();
         for (int i = 1; i <= 1000; i++) {
-            numbers.add(i);
-        }
-
-        Collections.shuffle(numbers, SEED);
-
-        for (int num : numbers) {
-            if (getTeam(num) == null) {
-                return num;
+            if (getTeam(i) == null) {
+                numbers.add(i);
             }
         }
 
-        throw new IllegalStateException("No available team number!");
+        if (numbers.size() == 0)
+            throw new IllegalStateException("No available team number!");
+
+        Collections.shuffle(numbers, SEED);
+        return numbers.get(0);
     }
 
     /**
      * Updates the tab list, ensuring that all teams are up-to-date.
+     *
      * @author Apollo
      */
     @Override
-    @SuppressWarnings("deprecation")
     public void update() {
         for (Player plr : getServer().getOnlinePlayers()) {
             Scoreboard scoreboard = plr.getScoreboard();
 
             // Create or get a team for players without a specific team
-            org.bukkit.scoreboard.Team remainingTeam = scoreboard.getTeam("Unranked");
-            if (remainingTeam == null) {
-                remainingTeam = scoreboard.registerNewTeam("Unranked");
-            }
-            remainingTeam.setAllowFriendlyFire(true);
+            org.bukkit.scoreboard.Team remainingTeam = scoreboard.getTeam(TEAMLESS_ID);
+            if (remainingTeam == null) remainingTeam = scoreboard.registerNewTeam(TEAMLESS_ID);
+
             remainingTeam.prefix(Component.empty());
             remainingTeam.suffix(Component.empty());
+            remainingTeam.setAllowFriendlyFire(true);
 
-            // Clear entries for remainingTeam to add the correct players later
-            for (String entry : new ArrayList<>(remainingTeam.getEntries())) {
-                remainingTeam.removeEntry(entry);
-            }
+            // Remove any players who are in the remaining team but are in a team.
+            for (Player player : getServer().getOnlinePlayers().stream().filter(player -> getTeam(player.getUniqueId()) != null).toList())
+                remainingTeam.removeEntry(player.getName());
 
-            // Add the players without a specific team to the remainingTeam
-            for (Player player : getServer().getOnlinePlayers().stream().filter(p -> getTeam(p.getUniqueId()) == null).toList()) {
+            // Add any players who aren't in a team in the remaining team list.
+            for (Player player : getServer().getOnlinePlayers().stream().filter(player -> getTeam(player.getUniqueId()) == null).toList())
                 remainingTeam.addEntry(player.getName());
-            }
 
-            List<ITeam> sortedTeams = getTeams();
-            if (sortedTeams.stream().allMatch(t -> t.getName().matches("[0-9]*")))
-                sortedTeams.sort(Comparator.comparingInt(ITeam::getNameAsNumber));
+            // Remove any teams that are no longer a part of the lead team list.
+            scoreboard.getTeams().stream().filter(bukkitTeam -> !bukkitTeam.getName().equals(TEAMLESS_ID) && getTeams().stream().noneMatch(leadTeam -> leadTeam.getId().equals(bukkitTeam.getName())))
+                    .forEach(org.bukkit.scoreboard.Team::unregister);
 
-            for (ITeam team : sortedTeams) {
-                org.bukkit.scoreboard.Team bukkitTeam = scoreboard.getTeam(team.getName());
+            // Create any teams that haven't been created yet.
+            getTeams().stream().filter(leadTeam -> scoreboard.getTeams().stream().noneMatch(bukkitTeam -> bukkitTeam.getName().equals(leadTeam.getId())))
+                    .forEach(leadTeam -> scoreboard.registerNewTeam(leadTeam.getId()));
 
-                // If the team does not exist, create it
-                if (bukkitTeam == null) {
-                    bukkitTeam = scoreboard.registerNewTeam(team.getName());
-                }
-
-                // Clear current entries for bukkitTeam to add the correct players later
-                for (String entry : new ArrayList<>(bukkitTeam.getEntries())) {
-                    bukkitTeam.removeEntry(entry);
-                }
-
-                bukkitTeam.prefix(MiniMessageUtil.deserialize(String.format("<%s>[%s] ", team.getColor(), team.getName())));
+            // Loop through every team now that we know that these teams exist.
+            getTeams().forEach(team -> {
+                @NotNull org.bukkit.scoreboard.Team bukkitTeam = Objects.requireNonNull(scoreboard.getTeam(team.getId()));
+                bukkitTeam.prefix(MiniMessageUtil.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
                 bukkitTeam.suffix(Component.empty());
-                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
-                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
-                bukkitTeam.setAllowFriendlyFire(config().getBoolean("allow_friendly_fire"));
-                bukkitTeam.setNameTagVisibility(EnumUtil.fetchEnum(NameTagVisibility.class, config.getString("name_tag_visibility"), NameTagVisibility.ALWAYS));
+                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, config.getString("collision_rule"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS));
+                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, config.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS));
+                bukkitTeam.setAllowFriendlyFire(team.isFriendlyFireAllowed());
 
-                // Add the players to the respective bukkitTeam
-                for (ITeamMember teamMember : team.getMembers()) {
-                    Player player = getServer().getPlayer(teamMember.getUniqueId());
-                    if (player == null) continue; // player is offline;
-                    bukkitTeam.addEntry(player.getName());
-                }
-            }
+                // Remove any team members that are no longer a part of the lead team member list.
+                bukkitTeam.getEntries().forEach(bukkitMember -> {
+                    if (team.getMembers().stream().noneMatch(leadMember -> leadMember.getName().equals(bukkitMember)))
+                        bukkitTeam.removeEntry(bukkitMember);
+                });
+
+                // Create any team members that haven't been created yet.
+                team.getMembers().stream().filter(leadMember -> !bukkitTeam.hasEntry(leadMember.getName()))
+                        .forEach(leadMember -> bukkitTeam.addEntry(leadMember.getName()));
+            });
         }
+
+//        for (Player plr : getServer().getOnlinePlayers()) {
+//            Scoreboard scoreboard = plr.getScoreboard();
+//
+//            // Create or get a team for players without a specific team
+//            org.bukkit.scoreboard.Team remainingTeam = scoreboard.getTeam("Unranked");
+//            if (remainingTeam == null) {
+//                remainingTeam = scoreboard.registerNewTeam("Unranked");
+//            }
+//            remainingTeam.setAllowFriendlyFire(true);
+//            remainingTeam.prefix(Component.empty());
+//            remainingTeam.suffix(Component.empty());
+//
+//            List<String> teamlessPlayers = getServer().getOnlinePlayers().stream().filter(p -> getTeam(p.getUniqueId()) == null).map(Player::getName).toList();
+//
+//            for (String teamlessPlayer : teamlessPlayers) {
+//                if (remainingTeam.hasEntry(teamlessPlayer)) return;
+//                else remainingTeam.addEntry(teamlessPlayer);
+//            }
+//
+//            // Remove player from entry if they were remaining and now have a team.
+//            if (!teamlessPlayers.contains(plr.getName()) && remainingTeam.hasEntry(plr.getName()))
+//                remainingTeam.removeEntry(plr.getName());
+//
+//            List<ITeam> sortedTeams = getTeams();
+//            if (sortedTeams.stream().allMatch(t -> t.getId().matches("[0-9]*")))
+//                sortedTeams.sort(Comparator.comparingInt(ITeam::getNameAsNumber));
+//
+//            for (ITeam team : sortedTeams) {
+//                org.bukkit.scoreboard.Team bukkitTeam = scoreboard.getTeam(team.getId());
+//
+//                // If the team does not exist, create it
+//                if (bukkitTeam == null) {
+//                    bukkitTeam = scoreboard.registerNewTeam(team.getId());
+//                }
+//
+//                bukkitTeam.prefix(MiniMessageUtil.deserialize(String.format("<%s>[%s] ", team.getColor(), team.getId())));
+//                bukkitTeam.suffix(Component.empty());
+//                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+//                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+//                bukkitTeam.setAllowFriendlyFire(config().getBoolean("allow_friendly_fire"));
+//                bukkitTeam.setNameTagVisibility(EnumUtil.fetchEnum(NameTagVisibility.class, config.getString("name_tag_visibility"), NameTagVisibility.ALWAYS));
+//
+//                // Add the players to the respective bukkitTeam
+//                for (ITeamMember teamMember : team.getMembers()) {
+//                    Player player = getServer().getPlayer(teamMember.getUniqueId());
+//                    if (player == null) continue; // player is offline;
+//                    bukkitTeam.addEntry(player.getName());
+//                }
+//            }
+//        }
     }
 
     @Override
     public ITeam createTeam(String name) throws TeamAlreadyExistsException {
-        if (teams.stream().anyMatch(t -> t.getName().equalsIgnoreCase(name))) throw new TeamAlreadyExistsException();
+        if (teams.stream().anyMatch(t -> t.getId().equalsIgnoreCase(name))) throw new TeamAlreadyExistsException();
         Team team = new Team(name, "#FFFFFF");
         teams.add(team);
         return team;
@@ -249,9 +297,9 @@ public final class LeadPaper extends JavaPlugin implements ILeadAPI {
 
     @Override
     public ITeam deleteTeam(String name) throws TeamNotFoundException {
-        ITeam team = teams.stream().filter(t -> t.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+        ITeam team = teams.stream().filter(t -> t.getId().equalsIgnoreCase(name)).findFirst().orElse(null);
         if (team == null) throw new TeamNotFoundException();
-        teams.removeIf(t -> t.getName().equals(team.getName()));
+        teams.removeIf(t -> t.getId().equals(team.getId()));
         return team;
     }
 

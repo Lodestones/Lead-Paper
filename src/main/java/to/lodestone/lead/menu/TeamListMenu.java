@@ -19,13 +19,10 @@ import to.lodestone.bookshelfapi.api.menu.build.TopMenuBuilder;
 import to.lodestone.bookshelfapi.api.util.ArrayUtil;
 import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
 import to.lodestone.lead.LeadPaper;
-import to.lodestone.lead.team.Team;
-import to.lodestone.lead.team.TeamMember;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class TeamListMenu extends Menu {
@@ -84,7 +81,7 @@ public class TeamListMenu extends Menu {
 
             ItemStack listHead = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) listHead.getItemMeta();
-            meta.displayName(MiniMessageUtil.deserialize(String.format("<reset><%s>Team %s", team.getColor(), team.getName())).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(MiniMessageUtil.deserialize(String.format("<reset><%s>Team %s", team.getColor(), team.getId())).decoration(TextDecoration.ITALIC, false));
             List<Component> lores = new ArrayList<>();
             List<ITeamMember> members = team.getMembers();
             members.sort((a, b) -> {
@@ -96,9 +93,12 @@ public class TeamListMenu extends Menu {
             for (ITeamMember teamMember : members)
                 lores.add(MiniMessageUtil.deserialize(String.format("<reset><white>- <yellow>%s", teamMember.getName())).decoration(TextDecoration.ITALIC, false));
             meta.lore(lores);
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(team.getLeaderUniqueId());
-            if (offlinePlayer.getName() != null)
-                meta.setOwningPlayer(offlinePlayer);
+            if (team.getLeaderUniqueId() != null) {
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(team.getLeaderUniqueId());
+                if (offlinePlayer.getName() != null)
+                    meta.setOwningPlayer(offlinePlayer);
+            }
+
             listHead.setItemMeta(meta);
 
             topMenuBuilder.editRow(_c[1], rowBuilder -> rowBuilder.setSlot(_c[0], listHead,
