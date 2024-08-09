@@ -25,14 +25,24 @@ public class PlayerListener implements Listener {
     public void on(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
+
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            player.sendMessage(Component.empty());
-            player.sendMessage(MiniMessageUtil.deserialize("  <yellow><bold>Lead - The Ultimate Teams Plugin"));
-            player.sendMessage(MiniMessageUtil.deserialize(String.format("  <white>Running <yellow>%s", LeadPaper.VERSION)));
-            player.sendMessage(MiniMessageUtil.deserialize("  <white>Download Lead at <hover:show_text:'<green>Download Lead at Modrinth!'><click:open_url:https://modrinth.com/plugin/lead><underlined><green>Modrinth!"));
-            player.sendMessage(MiniMessageUtil.deserialize("  <white>Consider donating to my <hover:show_text:'<#E338D4>Donate to my ko-fi!'><click:open_url:https://ko-fi.com/apollo30><underlined><#E338D4>ko-fi!"));
-            player.sendMessage(MiniMessageUtil.deserialize("  <white>Join the Lodestone <hover:show_text:'<#5C77FB>Join the Discord'><click:open_url:https://discord.gg/lodestone><underlined><#5C77FB>discord!"));
-            player.sendMessage(Component.empty());
+            if (plugin.isKofiDonor()) {
+                if (player.isOp()) {
+                    player.sendMessage(Component.empty());
+                    player.sendMessage(MiniMessageUtil.deserialize("  <yellow><bold>Lead - The Ultimate Teams Plugin"));
+                    player.sendMessage(MiniMessageUtil.deserialize(String.format("  <white>Running <yellow>%s", LeadPaper.VERSION)));
+                    player.sendMessage(Component.empty());
+                }
+            } else {
+                player.sendMessage(Component.empty());
+                player.sendMessage(MiniMessageUtil.deserialize("  <yellow><bold>Lead - The Ultimate Teams Plugin"));
+                player.sendMessage(MiniMessageUtil.deserialize(String.format("  <white>Running <yellow>%s", LeadPaper.VERSION)));
+                player.sendMessage(MiniMessageUtil.deserialize("  <white>Download Lead at <hover:show_text:'<green>Download Lead at Modrinth!'><click:open_url:https://modrinth.com/plugin/lead><underlined><green>Modrinth!"));
+                player.sendMessage(MiniMessageUtil.deserialize("  <white>Consider donating to my <hover:show_text:'<#E338D4>Donate to my ko-fi!'><click:open_url:https://ko-fi.com/apollo30><underlined><#E338D4>ko-fi!"));
+                player.sendMessage(MiniMessageUtil.deserialize("  <white>Join the Lodestone <hover:show_text:'<#5C77FB>Join the Discord'><click:open_url:https://discord.gg/lodestone><underlined><#5C77FB>discord!"));
+                player.sendMessage(Component.empty());
+            }
         }, 10L);
 
         Task.later(plugin, plugin::update, 1L);

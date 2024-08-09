@@ -1,5 +1,5 @@
 name: Lead
-version: '1.1.1'
+version: '1.1.2'
 main: to.lodestone.lead.LeadPaper
 api-version: '1.20'
 authors: [Apollo30]

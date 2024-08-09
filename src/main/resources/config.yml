@@ -45,14 +45,16 @@ available_hex_colors:
 #   Setting the permission to "null" will make the command public.   #
 ######################################################################
 commands:
-  kick: "lodestone.lead.commands.kick"
-  leave: "lodestone.lead.commands.leave"
+  kick: null
+  leave: null
   disband: null
   invite: null
   create: null
   join: null
   teleport: "lodestone.lead.command.teleport"
   chat: null
+  update: "lodestone.lead.commands.update"
+  friendly_fire: "lodestone.lead.commands.friendly_fire"
   nametag: "lodestone.lead.commands.nametag"
   collidable: "lodestone.lead.commands.collidable"
   merge: "lodestone.lead.commands.merge"
@@ -61,6 +63,6 @@ commands:
   delete: "lodestone.lead.commands.delete"
   id: "lodestone.lead.commands.id"
   display_name: "lodestone.lead.commands.display_name"
-  color: "lodestone.lead.commands.setcolor"
+  color: "lodestone.lead.commands.color"
   list: null
   help: null

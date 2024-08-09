@@ -7,12 +7,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.NameTagVisibility;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import to.lodestone.bookshelfapi.BookshelfAPI;
 import to.lodestone.bookshelfapi.IBookshelfAPI;
 import to.lodestone.bookshelfapi.api.Configuration;
+import to.lodestone.bookshelfapi.api.KofiManager;
 import to.lodestone.bookshelfapi.api.VersionUpdater;
 import to.lodestone.bookshelfapi.api.util.EnumUtil;
 import to.lodestone.bookshelfapi.api.util.Metrics;
@@ -33,24 +33,27 @@ import to.lodestone.leadapi.api.exception.TeamNotFoundException;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public final class LeadPaper extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "beta-v1.1.1";
+    public static final String VERSION = "v1.1.2";
     private static final int CONFIG_VERSION = 2;
     private static final String TEAMLESS_ID = "TEAMLESS";
 
     private List<ITeam> teams;
     public static Random SEED = new Random();
     private Configuration config;
+    private Configuration team;
+    private KofiManager kofiManager;
 
     @Override
     public void onLoad() {
+        this.team = new Configuration(this, "teams.yml");
+        this.team.initialize();
+
         this.config = new Configuration(this, "config.yml");
         this.config.initialize();
-        new Configuration(this, "teams.yml").initialize();
     }
 
     @Override
@@ -108,6 +111,12 @@ public final class LeadPaper extends JavaPlugin implements ILeadAPI {
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
         getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://modrinth.com/plugin/lead", "https://api.modrinth.com/v2/project/lead/version", VERSION), this);
+
+        this.kofiManager = new KofiManager(config.getString("donation_key", null));
+    }
+
+    public boolean isKofiDonor() {
+        return this.kofiManager.isKofiDonor();
     }
 
     public IBookshelfAPI bookshelf() {
@@ -133,28 +142,18 @@ public final class LeadPaper extends JavaPlugin implements ILeadAPI {
 
     @Override
     public void save() {
-        File teamFile = new File(getDataFolder(), "teams.yml");
-        FileConfiguration teamConfig = YamlConfiguration.loadConfiguration(teamFile);
-
         // Wipe all concurrent teams first.
-        for (String key : teamConfig.getKeys(false))
-            teamConfig.set(key, null);
+        for (String key : team.get().getKeys(false))
+            team.set(key, null);
 
-        for (ITeam team : getTeams()) {
-            try {
-                team.save(teamConfig);
-                teamConfig.save(new File(getDataFolder(), "teams.yml"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        for (ITeam team : getTeams()) team.save(this.team.get());
+        this.team.save();
     }
 
     @Nullable
     public ITeam getTeam(UUID member) {
         return teams.stream().filter(team -> team.containsMember(member)).findFirst().orElse(null);
     }
-
 
     @Nullable
     public ITeam getTeam(int number) {
