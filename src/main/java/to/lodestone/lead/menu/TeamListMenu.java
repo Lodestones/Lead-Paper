@@ -18,7 +18,7 @@ import to.lodestone.bookshelfapi.api.menu.build.MenuBuilder;
 import to.lodestone.bookshelfapi.api.menu.build.TopMenuBuilder;
 import to.lodestone.bookshelfapi.api.util.ArrayUtil;
 import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPaper;
+import to.lodestone.lead.LeadPlugin;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 
@@ -28,9 +28,9 @@ import java.util.List;
 public class TeamListMenu extends Menu {
 
     private int page;
-    private final LeadPaper plugin;
+    private final LeadPlugin plugin;
 
-    public TeamListMenu(LeadPaper plugin, Player player, int page) {
+    public TeamListMenu(LeadPlugin plugin, Player player, int page) {
         super(player);
         this.plugin = plugin;
         this.page = page;

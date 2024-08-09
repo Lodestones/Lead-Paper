@@ -2,8 +2,12 @@
 #                       General Configuration                         #
 #  DO NOT TOUCH VERSION! YOU MAY BREAK YOUR CONFIGURATION IF YOU DO!  #
 #######################################################################
-version: 2
+version: 3
 max_team_size: 5
+default: # What the default setting is for whenever someone creates a team.
+  friendly_fire: true
+  collidable: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
+  name_tag_visibility: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
 
 #########################################################################
 #                            Donation Key                               #

@@ -16,7 +16,7 @@ import to.lodestone.bookshelfapi.api.command.Command;
 import to.lodestone.bookshelfapi.api.util.EnumUtil;
 import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
 import to.lodestone.bookshelfapi.api.util.StringUtil;
-import to.lodestone.lead.LeadPaper;
+import to.lodestone.lead.LeadPlugin;
 import to.lodestone.lead.menu.TeamListMenu;
 import to.lodestone.lead.team.Team;
 import to.lodestone.lead.team.TeamMember;
@@ -30,7 +30,7 @@ public class TeamCommand extends Command {
 
     private final HashMap<UUID, Long> cooldowns = new HashMap<>();
 
-    public TeamCommand(LeadPaper plugin) {
+    public TeamCommand(LeadPlugin plugin) {
         super("team");
         @Nullable String commandPermission = plugin.config().getString("permissions.team");
         if (commandPermission != null) permission(commandPermission);
@@ -242,7 +242,7 @@ public class TeamCommand extends Command {
 
                             List<String> randomColors = plugin.config().getStringList("available_hex_colors");
 
-                            team = new Team(String.valueOf(availableTeamNumber), player.getUniqueId(), randomColors.get(LeadPaper.SEED.nextInt(randomColors.size())));
+                            team = new Team(plugin, String.valueOf(availableTeamNumber), player.getUniqueId(), randomColors.get(LeadPlugin.SEED.nextInt(randomColors.size())));
                             team.getMembers().add(new TeamMember(player));
 
                             player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>TEAM CREATED\n  <reset><gray>You've created Team %s\n ", team.getId())));

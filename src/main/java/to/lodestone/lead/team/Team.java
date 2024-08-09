@@ -3,6 +3,8 @@ package to.lodestone.lead.team;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
+import to.lodestone.bookshelfapi.api.util.EnumUtil;
+import to.lodestone.lead.LeadPlugin;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 
@@ -36,7 +38,7 @@ public class Team implements ITeam {
     }
 
 
-    public Team(String id, @Nullable UUID leaderUniqueId, String randomColor) {
+    public Team(LeadPlugin plugin, String id, @Nullable UUID leaderUniqueId, String randomColor) {
         this.color = randomColor;
         this.id = id;
         this.name = String.format("[%s]", id);
@@ -44,8 +46,9 @@ public class Team implements ITeam {
         this.leaderUniqueId = leaderUniqueId;
         this.invitations = new ArrayList<>();
         this.members = new ArrayList<>();
-        this.collidable = org.bukkit.scoreboard.Team.OptionStatus.ALWAYS;
-        this.nameTagVisibility = org.bukkit.scoreboard.Team.OptionStatus.ALWAYS;
+        this.isFriendlyFireAllowed = plugin.config().getBoolean("default.friendly_fire", true);
+        this.collidable = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("default.collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+        this.nameTagVisibility = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("default.name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
     }
 
     // Constructor for config.
@@ -80,12 +83,12 @@ public class Team implements ITeam {
 
     @Override
     public String getId() {
-        return id;
+        return Objects.requireNonNullElse(id, name);
     }
 
     @Override
     public String getName() {
-        return name;
+        return Objects.requireNonNullElse(name, id);
     }
 
     @Override

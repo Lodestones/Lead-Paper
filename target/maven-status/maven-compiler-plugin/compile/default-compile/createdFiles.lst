@@ -1,4 +1,4 @@
-to\lodestone\lead\LeadPaper.class
+to\lodestone\lead\LeadPlugin.class
 to\lodestone\lead\command\TeamCommand.class
 to\lodestone\lead\team\Team.class
 to\lodestone\lead\team\TeamMember.class

@@ -3,13 +3,13 @@ package to.lodestone.lead.listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldSaveEvent;
-import to.lodestone.lead.LeadPaper;
+import to.lodestone.lead.LeadPlugin;
 
 public class WorldListener implements Listener {
 
-    private final LeadPaper plugin;
+    private final LeadPlugin plugin;
 
-    public WorldListener(LeadPaper plugin) {
+    public WorldListener(LeadPlugin plugin) {
         this.plugin = plugin;
     }
 

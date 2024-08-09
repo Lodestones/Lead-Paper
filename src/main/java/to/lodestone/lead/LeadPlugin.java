@@ -35,9 +35,9 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
 
-public final class LeadPaper extends JavaPlugin implements ILeadAPI {
+public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.1.2";
+    public static final String VERSION = "v1.1.3";
     private static final int CONFIG_VERSION = 2;
     private static final String TEAMLESS_ID = "TEAMLESS";
 

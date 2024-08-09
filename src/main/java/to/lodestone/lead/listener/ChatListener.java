@@ -8,15 +8,15 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import to.lodestone.bookshelfapi.api.event.PlayerChatEvent;
 import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPaper;
+import to.lodestone.lead.LeadPlugin;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 
 public class ChatListener implements Listener {
 
-    private final LeadPaper plugin;
+    private final LeadPlugin plugin;
 
-    public ChatListener(LeadPaper plugin) {
+    public ChatListener(LeadPlugin plugin) {
         this.plugin = plugin;
     }
 

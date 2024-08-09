@@ -2,17 +2,16 @@ package to.lodestone.lead.command;
 
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import net.kyori.adventure.text.Component;
-import org.bukkit.entity.Player;
 import to.lodestone.bookshelfapi.api.command.Command;
 import to.lodestone.bookshelfapi.api.event.PlayerChatEvent;
 import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPaper;
+import to.lodestone.lead.LeadPlugin;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 
 public class TeamMessageCommand extends Command {
 
-    public TeamMessageCommand(LeadPaper plugin) {
+    public TeamMessageCommand(LeadPlugin plugin) {
         super("teammsg");
         aliases("tm", "tc", "tmsg");
         arguments(new GreedyStringArgument("message"));
