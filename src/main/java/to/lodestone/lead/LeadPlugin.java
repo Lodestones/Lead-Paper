@@ -198,12 +198,16 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
             remainingTeam.setAllowFriendlyFire(true);
 
             // Remove any players who are in the remaining team but are in a team.
-            for (Player player : getServer().getOnlinePlayers().stream().filter(player -> getTeam(player.getUniqueId()) != null).toList())
-                remainingTeam.removeEntry(player.getName());
+            for (Player player : getServer().getOnlinePlayers().stream().filter(player -> getTeam(player.getUniqueId()) != null).toList()) {
+                if (remainingTeam.hasEntry(player.getName()))
+                    remainingTeam.removeEntry(player.getName());
+            }
 
             // Add any players who aren't in a team in the remaining team list.
-            for (Player player : getServer().getOnlinePlayers().stream().filter(player -> getTeam(player.getUniqueId()) == null).toList())
-                remainingTeam.addEntry(player.getName());
+            for (Player player : getServer().getOnlinePlayers().stream().filter(player -> getTeam(player.getUniqueId()) == null).toList()) {
+                if (!remainingTeam.hasEntry(player.getName()))
+                    remainingTeam.addEntry(player.getName());
+            }
 
             // Remove any teams that are no longer a part of the lead team list.
             scoreboard.getTeams().stream().filter(bukkitTeam -> !bukkitTeam.getName().equals(TEAMLESS_ID) && getTeams().stream().noneMatch(leadTeam -> leadTeam.getId().equals(bukkitTeam.getName())))
