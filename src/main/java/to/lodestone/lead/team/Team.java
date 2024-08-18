@@ -25,23 +25,30 @@ public class Team implements ITeam {
     private final UUID leaderUniqueId;
     private String color;
 
-    public Team(String id, String randomColor) {
+    private final LeadPlugin plugin;
+
+    public Team(LeadPlugin plugin, String id, String randomColor) {
         this.color = randomColor;
+        this.plugin = plugin;
         this.id = id;
         this.name = String.format("[%s]", id);
         this.uniqueId = UUID.randomUUID();
         this.leaderUniqueId = null;
         this.invitations = new ArrayList<>();
         this.members = new ArrayList<>();
-        this.collidable = org.bukkit.scoreboard.Team.OptionStatus.ALWAYS;
-        this.nameTagVisibility = org.bukkit.scoreboard.Team.OptionStatus.ALWAYS;
+        this.isFriendlyFireAllowed = plugin.config().getBoolean("default.friendly_fire", true);
+        this.collidable = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("default.collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+        this.nameTagVisibility = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("default.name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
     }
 
 
     public Team(LeadPlugin plugin, String id, @Nullable UUID leaderUniqueId, String randomColor) {
         this.color = randomColor;
-        this.id = id;
-        this.name = String.format("[%s]", id);
+        this.plugin = plugin;
+        this.id = id.toUpperCase().replaceAll(" ", "_");
+        this.name = Objects.requireNonNull(plugin.random().getString("prefix", "[{display_name}]"))
+                .replaceAll("\\{display_name}", id)
+                .replaceAll("\\{id}", id);
         this.uniqueId = UUID.randomUUID();
         this.leaderUniqueId = leaderUniqueId;
         this.invitations = new ArrayList<>();
@@ -53,6 +60,7 @@ public class Team implements ITeam {
 
     // Constructor for config.
     public Team(
+            LeadPlugin plugin,
             String id,
             String name,
             String color,
@@ -64,6 +72,7 @@ public class Team implements ITeam {
             org.bukkit.scoreboard.Team.OptionStatus nameTagVisibility,
             boolean isFriendlyFireAllowed
     ) {
+        this.plugin = plugin;
         this.id = id;
         this.name = name;
         this.color = color;
@@ -78,7 +87,7 @@ public class Team implements ITeam {
 
     @Override
     public List<ITeamMember> getMembers() {
-        return members;
+        return members.stream().toList();
     }
 
     @Override
@@ -123,12 +132,16 @@ public class Team implements ITeam {
 
     @Override
     public void setId(String id) {
+        plugin.getTeamsById().remove(this.id); // remove old id
         this.id = id;
+        plugin.getTeamsById().put(id, this); // add new id
     }
 
     @Override
     public void setName(String name) {
-        this.name = name;
+        this.name = Objects.requireNonNull(plugin.random().getString("prefix", "[{display_name}]"))
+                .replaceAll("\\{display_name}", name)
+                .replaceAll("\\{id}", id);
     }
 
     @Override
@@ -159,6 +172,30 @@ public class Team implements ITeam {
     @Override
     public ArrayList<UUID> getInvitations() {
         return invitations;
+    }
+
+    @Override
+    public void addInvitation(UUID uniqueId) {
+        this.invitations.add(uniqueId);
+    }
+
+    @Override
+    public void removeInvitation(UUID uniqueId) {
+        this.invitations.removeIf(uuid -> uuid.toString().equalsIgnoreCase(uniqueId.toString()));
+    }
+
+    @Override
+    public void addMember(ITeamMember member) {
+        this.members.add(member);
+        plugin.getTeamByPlayer().put(member.getUniqueId(), this.getUniqueId());
+        plugin.getPlayersByTeam().put(this.getUniqueId(), members.stream().map(ITeamMember::getUniqueId).toList());
+    }
+
+    @Override
+    public void removeMember(ITeamMember member) {
+        this.members.removeIf(m -> m.getUniqueId().toString().equalsIgnoreCase(member.getUniqueId().toString()));
+        plugin.getTeamByPlayer().remove(member.getUniqueId());
+        plugin.getPlayersByTeam().put(this.getUniqueId(), members.stream().map(ITeamMember::getUniqueId).toList());
     }
 
     @Override
@@ -198,4 +235,5 @@ public class Team implements ITeam {
         section.set("is_friendly_fire_allowed", this.isFriendlyFireAllowed);
         section.set("color", this.color);
     }
+
 }
