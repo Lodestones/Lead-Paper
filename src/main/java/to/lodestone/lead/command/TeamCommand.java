@@ -617,6 +617,7 @@ public class TeamCommand extends Command {
                                 if (p != null)
                                     p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>PLAYER REMOVED\n  <reset><yellow>%s</yellow> <gray>has been removed from your team!\n ", target.getName())));
                             }
+
                             team.removeMember(target.getUniqueId());
 
                             sender.sendMessage(MiniMessageUtil.deserialize(String.format("Removed <yellow>%s <white>from <%s>Team %s", target.getName(), team.getColor(), team.getId())));

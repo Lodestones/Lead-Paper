@@ -248,7 +248,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 }
             }
 
-            Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Updated all teams in %s ms.]", System.currentTimeMillis() - timeNow), "lead.debug");
+            if (config().getBoolean("debug"))
+                Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Updated all teams in %s ms.]", System.currentTimeMillis() - timeNow), "lead.debug");
         });
     }
 
