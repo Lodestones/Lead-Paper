@@ -162,6 +162,7 @@ public class Team implements ITeam {
     @Override
     public void removeMember(UUID uniqueId) {
         this.members.removeIf(member -> member.getUniqueId().toString().equalsIgnoreCase(uniqueId.toString()));
+        this.plugin.getTeamByPlayer().remove(uniqueId.toString());
     }
 
     @Override
@@ -187,15 +188,15 @@ public class Team implements ITeam {
     @Override
     public void addMember(ITeamMember member) {
         this.members.add(member);
-        plugin.getTeamByPlayer().put(member.getUniqueId(), this.getUniqueId());
-        plugin.getPlayersByTeam().put(this.getUniqueId(), members.stream().map(ITeamMember::getUniqueId).toList());
+        plugin.getTeamByPlayer().put(member.getUniqueId().toString(), this.getUniqueId());
+        plugin.getPlayersByTeam().put(this.getUniqueId().toString(), new ArrayList<>(members.stream().map(ITeamMember::getUniqueId).toList()));
     }
 
     @Override
     public void removeMember(ITeamMember member) {
         this.members.removeIf(m -> m.getUniqueId().toString().equalsIgnoreCase(member.getUniqueId().toString()));
-        plugin.getTeamByPlayer().remove(member.getUniqueId());
-        plugin.getPlayersByTeam().put(this.getUniqueId(), members.stream().map(ITeamMember::getUniqueId).toList());
+        plugin.getTeamByPlayer().remove(member.getUniqueId().toString());
+        plugin.getPlayersByTeam().put(this.getUniqueId().toString(), new ArrayList<>(members.stream().map(ITeamMember::getUniqueId).toList()));
     }
 
     @Override

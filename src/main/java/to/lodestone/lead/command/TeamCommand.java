@@ -45,7 +45,7 @@ public class TeamCommand extends Command {
                 .withRequirement(sender -> {
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
-                        return team != null && team.getLeaderUniqueId() != null && team.getLeaderUniqueId().toString().equalsIgnoreCase(player.getUniqueId().toString());
+                        return team != null && team.getLeaderUniqueId() != null && team.containsMember(team.getLeaderUniqueId()) && team.getLeaderUniqueId().toString().equalsIgnoreCase(player.getUniqueId().toString());
                     }
 
                     return false;
@@ -134,7 +134,7 @@ public class TeamCommand extends Command {
                 .withRequirement(sender -> {
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
-                        return team != null && team.getLeaderUniqueId() != null && team.getLeaderUniqueId().toString().equalsIgnoreCase(player.getUniqueId().toString());
+                        return team != null && team.getLeaderUniqueId() != null && team.containsMember(team.getLeaderUniqueId()) && team.getLeaderUniqueId().toString().equalsIgnoreCase(player.getUniqueId().toString());
                     }
 
                     return false;
@@ -486,78 +486,150 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("update")
-                .permission("lodestone.lead.commands.update")
-                .executesPlayer((player, args) -> {
-                    plugin.update();
-                })
-        );
-        subCommand(new Command("collidable")
-                .permission(plugin.config().getString("commands.collidable", null))
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
-                .executes((sender, args) -> {
-                    if (args.get(0) instanceof String targetTeam) {
-                        ITeam team = plugin.getTeam(targetTeam);
-                        if (team == null) {
-                            sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
-                            return;
-                        }
+//        subCommand(new Command("update")
+//                .permission("lodestone.lead.commands.update")
+//                .executesPlayer((player, args) -> {
+//                    plugin.update();
+//                })
+//        );
+        subCommand(new Command("modify")
+                .subCommand(new Command("display_name")
+                        .permission(plugin.config().getString("commands.display_name", null))
+                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new GreedyStringArgument("new_name"))
+                        .executes((sender, args) -> {
+                            if (args.get(0) instanceof String targetTeam) {
+                                if (args.get(1) instanceof String newTeamName) {
+                                    ITeam team = plugin.getTeam(targetTeam);
+                                    if (team == null) {
+                                        sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
+                                        return;
+                                    }
 
-                        if (args.get(1) instanceof String optionStatusName) {
-                            org.bukkit.scoreboard.Team.OptionStatus status = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, optionStatusName);
-                            if (status == null) {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>That option status isn't valid!"));
-                                return;
+                                    String oldTeamName = team.getId();
+                                    PreTeamChangeNameEvent teamChangeNameEvent = new PreTeamChangeNameEvent(team, oldTeamName, newTeamName);
+                                    if (teamChangeNameEvent.callEvent()) {
+                                        for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
+                                            Player p = plugin.getServer().getPlayer(playerUniqueId);
+                                            if (p != null)
+                                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>TEAM NAME CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team name to <yellow>%s<gray>!\n ", sender.getName(), newTeamName)));
+                                        }
+
+                                        team.setName(newTeamName);
+                                        sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed Team %s's name from %s<white> to <yellow>%s!", team.getId(), oldTeamName, newTeamName)));
+                                        plugin.update();
+
+                                        if (sender instanceof Player player)
+                                            CommandAPI.updateRequirements(player);
+
+                                        new PostTeamChangeIdEvent(team, oldTeamName, newTeamName).callEvent();
+                                    }
+                                }
                             }
+                        })
+                )
+                .subCommand(new Command("id")
+                        .permission(plugin.config().getString("commands.id", null))
+                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_id"))
+                        .executes((sender, args) -> {
+                            if (args.get(0) instanceof String targetTeam) {
+                                if (args.get(1) instanceof String newTeamId) {
+                                    ITeam team = plugin.getTeam(targetTeam);
+                                    if (team == null) {
+                                        sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
+                                        return;
+                                    }
 
-                            team.setCollidable(status);
-                            sender.sendMessage(MiniMessageUtil.deserialize("Collision rule for team \"%s\" is now \"%s\"", team.getId(), StringUtil.titleCase(status.name(), true)));
-                        }
-                    }
-                })
-        );
-        subCommand(new Command("friendly_fire")
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new BooleanArgument("value"))
-                .executes((sender, args) -> {
-                    if (args.get(0) instanceof String targetTeam) {
-                        ITeam team = plugin.getTeam(targetTeam);
-                        if (team == null) {
-                            sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
-                            return;
-                        }
+                                    String oldTeamId = team.getId();
+                                    PreTeamChangeIdEvent teamChangeIdEvent = new PreTeamChangeIdEvent(team, oldTeamId, newTeamId);
+                                    if (teamChangeIdEvent.callEvent()) {
+                                        for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
+                                            Player p = plugin.getServer().getPlayer(playerUniqueId);
+                                            if (p != null)
+                                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>TEAM ID CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team id to <yellow>%s<gray>!\n ", sender.getName(), newTeamId)));
+                                        }
 
-                        if (args.get(1) instanceof Boolean value) {
-                            team.setFriendlyFireAllowed(value);
-                            sender.sendMessage(MiniMessageUtil.deserialize("%s friendly fire for team \"%s\"", value ? "Enabled" : "Disabled", team.getId()));
-                        }
-                    }
-                })
-        );
-        subCommand(new Command("nametag")
-                .permission(plugin.config().getString("commands.nametag", null))
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
-                .executes((sender, args) -> {
-                    if (args.get(0) instanceof String targetTeam) {
-                        ITeam team = plugin.getTeam(targetTeam);
-                        if (team == null) {
-                            sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
-                            return;
-                        }
+                                        team.setId(newTeamId);
+                                        team.setName(newTeamId);
+                                        sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed the team with an id of %s<white> to <yellow>%s!", oldTeamId, newTeamId)));
+                                        plugin.update();
 
-                        if (args.get(1) instanceof String optionStatusName) {
-                            org.bukkit.scoreboard.Team.OptionStatus status = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, optionStatusName);
-                            if (status == null) {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>That option status isn't valid!"));
-                                return;
+                                        if (sender instanceof Player player)
+                                            CommandAPI.updateRequirements(player);
+
+                                        new PostTeamChangeIdEvent(team, oldTeamId, newTeamId).callEvent();
+                                    }
+                                }
                             }
+                        })
+                )
+                .subCommand(new Command("collidable")
+                        .permission(plugin.config().getString("commands.collidable", null))
+                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
+                        .executes((sender, args) -> {
+                            if (args.get(0) instanceof String targetTeam) {
+                                ITeam team = plugin.getTeam(targetTeam);
+                                if (team == null) {
+                                    sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
+                                    return;
+                                }
 
-                            team.setNameTagVisibility(status);
-                            sender.sendMessage(MiniMessageUtil.deserialize("Nametag visibility for team \"%s\" is now \"%s\"", team.getId(), StringUtil.titleCase(status.name(), true)));
-                        }
-                    }
-                })
+                                if (args.get(1) instanceof String optionStatusName) {
+                                    org.bukkit.scoreboard.Team.OptionStatus status = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, optionStatusName);
+                                    if (status == null) {
+                                        sender.sendMessage(MiniMessageUtil.deserialize("<red>That option status isn't valid!"));
+                                        return;
+                                    }
+
+                                    team.setCollidable(status);
+                                    sender.sendMessage(MiniMessageUtil.deserialize("Collision rule for team \"%s\" is now \"%s\"", team.getId(), StringUtil.titleCase(status.name(), true)));
+                                }
+                            }
+                        })
+                )
+                .subCommand(new Command("friendly_fire")
+                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new BooleanArgument("value"))
+                        .executes((sender, args) -> {
+                            if (args.get(0) instanceof String targetTeam) {
+                                ITeam team = plugin.getTeam(targetTeam);
+                                if (team == null) {
+                                    sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
+                                    return;
+                                }
+
+                                if (args.get(1) instanceof Boolean value) {
+                                    team.setFriendlyFireAllowed(value);
+                                    sender.sendMessage(MiniMessageUtil.deserialize("%s friendly fire for team \"%s\"", value ? "Enabled" : "Disabled", team.getId()));
+                                }
+                            }
+                        })
+                )
+                .subCommand(new Command("nametag")
+                        .permission(plugin.config().getString("commands.nametag", null))
+                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
+                        .executes((sender, args) -> {
+                            if (args.get(0) instanceof String targetTeam) {
+                                ITeam team = plugin.getTeam(targetTeam);
+                                if (team == null) {
+                                    sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
+                                    return;
+                                }
+
+                                if (args.get(1) instanceof String optionStatusName) {
+                                    org.bukkit.scoreboard.Team.OptionStatus status = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, optionStatusName);
+                                    if (status == null) {
+                                        sender.sendMessage(MiniMessageUtil.deserialize("<red>That option status isn't valid!"));
+                                        return;
+                                    }
+
+                                    team.setNameTagVisibility(status);
+                                    sender.sendMessage(MiniMessageUtil.deserialize("Nametag visibility for team \"%s\" is now \"%s\"", team.getId(), StringUtil.titleCase(status.name(), true)));
+                                }
+                            }
+                        })
+                )
         );
         subCommand(new Command("place")
+                .aliases("add")
                 .permission(plugin.config().getString("commands.place", null))
                 .arguments(new PlayerArgument("target"), new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
                 .executes((sender, args) -> {
@@ -699,75 +771,6 @@ public class TeamCommand extends Command {
                                     CommandAPI.updateRequirements(player);
 
                                 new PostTeamChangeIdEvent(team, oldTeamColor, newTeamColor).callEvent();
-                            }
-                        }
-                    }
-                })
-        );
-        subCommand(new Command("display_name")
-                .permission(plugin.config().getString("commands.display_name", null))
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new GreedyStringArgument("new_name"))
-                .executes((sender, args) -> {
-                    if (args.get(0) instanceof String targetTeam) {
-                        if (args.get(1) instanceof String newTeamName) {
-                            ITeam team = plugin.getTeam(targetTeam);
-                            if (team == null) {
-                                sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
-                                return;
-                            }
-
-                            String oldTeamName = team.getId();
-                            PreTeamChangeNameEvent teamChangeNameEvent = new PreTeamChangeNameEvent(team, oldTeamName, newTeamName);
-                            if (teamChangeNameEvent.callEvent()) {
-                                for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
-                                    Player p = plugin.getServer().getPlayer(playerUniqueId);
-                                    if (p != null)
-                                        p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>TEAM NAME CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team name to <yellow>%s<gray>!\n ", sender.getName(), newTeamName)));
-                                }
-
-                                team.setName(newTeamName);
-                                sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed Team %s's name from %s<white> to <yellow>%s!", team.getId(), oldTeamName, newTeamName)));
-                                plugin.update();
-
-                                if (sender instanceof Player player)
-                                    CommandAPI.updateRequirements(player);
-
-                                new PostTeamChangeIdEvent(team, oldTeamName, newTeamName).callEvent();
-                            }
-                        }
-                    }
-                })
-        );
-        subCommand(new Command("id")
-                .permission(plugin.config().getString("commands.id", null))
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_id"))
-                .executes((sender, args) -> {
-                    if (args.get(0) instanceof String targetTeam) {
-                        if (args.get(1) instanceof String newTeamId) {
-                            ITeam team = plugin.getTeam(targetTeam);
-                            if (team == null) {
-                                sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
-                                return;
-                            }
-
-                            String oldTeamId = team.getId();
-                            PreTeamChangeIdEvent teamChangeIdEvent = new PreTeamChangeIdEvent(team, oldTeamId, newTeamId);
-                            if (teamChangeIdEvent.callEvent()) {
-                                for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
-                                    Player p = plugin.getServer().getPlayer(playerUniqueId);
-                                    if (p != null)
-                                        p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>TEAM ID CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team id to <yellow>%s<gray>!\n ", sender.getName(), newTeamId)));
-                                }
-
-                                team.setId(newTeamId);
-                                team.setName(newTeamId);
-                                sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed the team with an id of %s<white> to <yellow>%s!", oldTeamId, newTeamId)));
-                                plugin.update();
-
-                                if (sender instanceof Player player)
-                                    CommandAPI.updateRequirements(player);
-
-                                new PostTeamChangeIdEvent(team, oldTeamId, newTeamId).callEvent();
                             }
                         }
                     }

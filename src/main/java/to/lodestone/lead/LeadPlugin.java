@@ -44,8 +44,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private static final String TEAMLESS_ID = "TEAMLESS";
 
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
-    private final HashMap<UUID, UUID> teamByPlayer = new HashMap<>();
-    private final HashMap<UUID, List<UUID>> playersByTeam = new HashMap<>();
+    private final HashMap<String, UUID> teamByPlayer = new HashMap<>();
+    private final HashMap<String, List<UUID>> playersByTeam = new HashMap<>();
     private final HashMap<String, ITeam> teamsById = new HashMap<>();
 
     public static Random SEED = new Random();
@@ -140,7 +140,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     @Nullable
     public ITeam getTeam(UUID member) {
-        return teams.get(teamByPlayer.get(member));
+        return teams.get(teamByPlayer.get(member.toString()));
     }
 
     @Nullable
@@ -173,80 +173,82 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         long timeNow = System.currentTimeMillis();
         Task.runAsync(this, () -> {
             // Loop through the entire list.
-            for (Player plr : getServer().getOnlinePlayers()) {
-                Scoreboard scoreboard = plr.getScoreboard();
 
-                // Create or get a team for players without a specific team
-                org.bukkit.scoreboard.Team remainingTeam = scoreboard.getTeam(TEAMLESS_ID);
-                if (remainingTeam == null) {
+            Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+
+            // Create or get a team for players without a specific team
+            org.bukkit.scoreboard.Team remainingTeam = scoreboard.getTeam(TEAMLESS_ID);
+            if (remainingTeam == null) {
+                if (config().getBoolean("debug"))
+                    Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating the remaining team.]"), "lead.debug");
+                remainingTeam = scoreboard.registerNewTeam(TEAMLESS_ID);
+            }
+
+            remainingTeam.prefix(Component.empty());
+            remainingTeam.suffix(Component.empty());
+            remainingTeam.setAllowFriendlyFire(true);
+
+            // Remove any players who are in the remaining team but are in a team.
+            for (Player player : getServer().getOnlinePlayers().stream().filter(player -> hasTeam(player.getUniqueId())).toList()) {
+                if (remainingTeam.hasEntry(player.getName())) {
                     if (config().getBoolean("debug"))
-                        Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating the remaining team.]"), "lead.debug");
-                    remainingTeam = scoreboard.registerNewTeam(TEAMLESS_ID);
-                }
-
-                remainingTeam.prefix(Component.empty());
-                remainingTeam.suffix(Component.empty());
-                remainingTeam.setAllowFriendlyFire(true);
-
-                // Remove any players who are in the remaining team but are in a team.
-                for (Player player : getServer().getOnlinePlayers().stream().filter(player -> hasTeam(player.getUniqueId())).toList()) {
-                    if (remainingTeam.hasEntry(player.getName())) {
-                        if (config().getBoolean("debug"))
-                            Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from the remaining team.]", player.getName()), "lead.debug");
-                        remainingTeam.removeEntry(player.getName());
-                    }
-                }
-
-                // Remove any teams that are no longer a part of the lead team list.
-                for (org.bukkit.scoreboard.Team bukkitTeam : scoreboard.getTeams().stream().filter(bukkitTeam -> !bukkitTeam.getName().equals(TEAMLESS_ID) && getTeam(bukkitTeam.getName()) == null).toList()) {
-                    if (config().getBoolean("debug"))
-                        Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing scoreboard team named %s.]", bukkitTeam.getName()), "lead.debug");
-                    bukkitTeam.unregister();
-                }
-
-                // Create any teams that haven't been created yet.
-                for (ITeam team : getTeams().stream().filter(leadTeam -> scoreboard.getTeams().stream().noneMatch(bukkitTeam -> bukkitTeam.getName().equals(leadTeam.getId())))
-                        .toList()) {
-                    if (config().getBoolean("debug"))
-                        Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating scoreboard team named %s.]", team.getId()), "lead.debug");
-                    scoreboard.registerNewTeam(team.getId());
-                }
-
-                // Loop through every team now that we know that these teams exist.
-                for (ITeam team : getTeams()) {
-                    @NotNull org.bukkit.scoreboard.Team bukkitTeam = Objects.requireNonNull(scoreboard.getTeam(team.getId()));
-                    bukkitTeam.prefix(MiniMessageUtil.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
-                    bukkitTeam.suffix(Component.empty());
-                    bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, config.getString("collision_rule"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS));
-                    bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, config.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS));
-                    bukkitTeam.setAllowFriendlyFire(team.isFriendlyFireAllowed());
-
-                    // Remove any team members that are no longer a part of the lead team member list.
-                    for (String bukkitMember : bukkitTeam.getEntries()) {
-                        if (team.getMembers().stream().noneMatch(leadMember -> leadMember.getName().equals(bukkitMember))) {
-                            if (config().getBoolean("debug"))
-                                Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from scoreboard team %s.]", bukkitMember, team.getId()), "lead.debug");
-                            bukkitTeam.removeEntry(bukkitMember);
-                        }
-                    }
-
-                    // Create any team members that haven't been created yet.
-                    for (ITeamMember leadMember : team.getMembers().stream().filter(leadMember -> !bukkitTeam.hasEntry(leadMember.getName())).toList()) {
-                        if (config().getBoolean("debug"))
-                            Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Adding %s to scoreboard team %s.]", leadMember.getName(), team.getId()), "lead.debug");
-                        bukkitTeam.addEntry(leadMember.getName());
-                    }
-                }
-
-                // Add any players who aren't in a team in the remaining team list.
-                for (Player player : getServer().getOnlinePlayers().stream().filter(player -> !hasTeam(player.getUniqueId())).toList()) {
-                    if (!remainingTeam.hasEntry(player.getName())) {
-                        if (config().getBoolean("debug"))
-                            Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Adding %s to the remaining team.]", player.getName()), "lead.debug");
-                        remainingTeam.addEntry(player.getName());
-                    }
+                        Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from the remaining team.]", player.getName()), "lead.debug");
+                    remainingTeam.removeEntry(player.getName());
                 }
             }
+
+            // Remove any teams that are no longer a part of the lead team list.
+            for (org.bukkit.scoreboard.Team bukkitTeam : scoreboard.getTeams().stream().filter(bukkitTeam -> !bukkitTeam.getName().equals(TEAMLESS_ID) && getTeam(bukkitTeam.getName()) == null).toList()) {
+                if (config().getBoolean("debug"))
+                    Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing scoreboard team named %s.]", bukkitTeam.getName()), "lead.debug");
+                bukkitTeam.unregister();
+            }
+
+            // Create any teams that haven't been created yet.
+            for (ITeam team : getTeams().stream().filter(leadTeam -> scoreboard.getTeams().stream().noneMatch(bukkitTeam -> bukkitTeam.getName().equals(leadTeam.getId())))
+                    .toList()) {
+                if (config().getBoolean("debug"))
+                    Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating scoreboard team named %s.]", team.getId()), "lead.debug");
+                scoreboard.registerNewTeam(team.getId());
+            }
+
+            // Loop through every team now that we know that these teams exist.
+            for (ITeam team : getTeams()) {
+                @NotNull org.bukkit.scoreboard.Team bukkitTeam = Objects.requireNonNull(scoreboard.getTeam(team.getId()));
+                bukkitTeam.prefix(MiniMessageUtil.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
+                bukkitTeam.suffix(Component.empty());
+                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, config.getString("collision_rule"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS));
+                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, config.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS));
+                bukkitTeam.setAllowFriendlyFire(team.isFriendlyFireAllowed());
+
+                // Remove any team members that are no longer a part of the lead team member list.
+                for (String bukkitMember : bukkitTeam.getEntries()) {
+                    if (team.getMembers().stream().noneMatch(leadMember -> leadMember.getName().equals(bukkitMember))) {
+                        if (config().getBoolean("debug"))
+                            Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from scoreboard team %s.]", bukkitMember, team.getId()), "lead.debug");
+                        bukkitTeam.removeEntry(bukkitMember);
+                    }
+                }
+
+                // Create any team members that haven't been created yet.
+                for (ITeamMember leadMember : team.getMembers().stream().filter(leadMember -> !bukkitTeam.hasEntry(leadMember.getName())).toList()) {
+                    if (config().getBoolean("debug"))
+                        Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Adding %s to scoreboard team %s.]", leadMember.getName(), team.getId()), "lead.debug");
+                    bukkitTeam.addEntry(leadMember.getName());
+                }
+            }
+
+            // Add any players who aren't in a team in the remaining team list.
+            for (Player player : getServer().getOnlinePlayers().stream().filter(player -> !hasTeam(player.getUniqueId())).toList()) {
+                if (!remainingTeam.hasEntry(player.getName())) {
+                    if (config().getBoolean("debug"))
+                        Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Adding %s to the remaining team.]", player.getName()), "lead.debug");
+                    remainingTeam.addEntry(player.getName());
+                }
+            }
+
+            for (Player plr : getServer().getOnlinePlayers())
+                plr.setScoreboard(scoreboard);
 
             if (config().getBoolean("debug"))
                 Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Updated all teams in %s ms.]", System.currentTimeMillis() - timeNow), "lead.debug");
@@ -259,7 +261,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         Team team = new Team(this, id, leader, color);
         teams.put(team.getUniqueId(), team);
         teamsById.put(team.getId(), team);
-        playersByTeam.put(team.getUniqueId(), new ArrayList<>());
+        playersByTeam.put(team.getUniqueId().toString(), new ArrayList<>());
         return team;
     }
 
@@ -270,7 +272,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         Team team = new Team(this, id, randomColors.size() == 0 ? "#FFFFFF" : randomColors.get(SEED.nextInt(randomColors.size())));
         teams.put(team.getUniqueId(), team);
         teamsById.put(team.getId(), team);
-        playersByTeam.put(team.getUniqueId(), new ArrayList<>());
+        playersByTeam.put(team.getUniqueId().toString(), new ArrayList<>());
         return team;
     }
 
@@ -281,7 +283,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         Team team = new Team(this, id, leader, randomColors.size() == 0 ? "#FFFFFF" : randomColors.get(SEED.nextInt(randomColors.size())));
         teams.put(team.getUniqueId(), team);
         teamsById.put(team.getId(), team);
-        playersByTeam.put(team.getUniqueId(), new ArrayList<>());
+        playersByTeam.put(team.getUniqueId().toString(), new ArrayList<>());
         return team;
     }
 
@@ -326,9 +328,9 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 for (ITeamMember member : team.getMembers()) {
                     UUID playerId = member.getUniqueId();
                     playerIds.add(playerId);
-                    teamByPlayer.put(playerId, team.getUniqueId());
+                    teamByPlayer.put(playerId.toString(), team.getUniqueId());
                 }
-                playersByTeam.put(team.getUniqueId(), playerIds);
+                playersByTeam.put(team.getUniqueId().toString(), playerIds);
                 teamsById.put(team.getId(), team);
             }
         }
@@ -343,18 +345,18 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         if (team == null) throw new TeamNotFoundException();
         teams.remove(team.getUniqueId());
         teamsById.remove(team.getId());
-        playersByTeam.remove(team.getUniqueId());
-        team.getMembers().forEach(member -> teamByPlayer.remove(member.getUniqueId()));
+        playersByTeam.remove(team.getUniqueId().toString());
+        team.getMembers().forEach(member -> teamByPlayer.remove(member.getUniqueId().toString()));
         return team;
     }
 
     @Override
     public void removePlayerFromTeam(ITeam team, UUID player) {
         team.removeMember(player);
-        List<UUID> players = new ArrayList<>(playersByTeam.get(team.getUniqueId()));
+        List<UUID> players = new ArrayList<>(playersByTeam.get(team.getUniqueId().toString()));
         players.remove(player);
-        playersByTeam.put(team.getUniqueId(), players);
-        teamByPlayer.remove(player);
+        playersByTeam.put(team.getUniqueId().toString(), players);
+        teamByPlayer.remove(player.toString());
     }
 
     @Override
@@ -366,8 +368,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     public ITeam deleteTeam(ITeam team) {
         teams.remove(team.getUniqueId());
         teamsById.remove(team.getId());
-        playersByTeam.remove(team.getUniqueId());
-        team.getMembers().forEach(member -> teamByPlayer.remove(member.getUniqueId()));
+        playersByTeam.remove(team.getUniqueId().toString());
+        team.getMembers().forEach(member -> teamByPlayer.remove(member.getUniqueId().toString()));
         return team;
     }
 
@@ -375,11 +377,11 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         return teamsById;
     }
 
-    public HashMap<UUID, List<UUID>> getPlayersByTeam() {
+    public HashMap<String, List<UUID>> getPlayersByTeam() {
         return playersByTeam;
     }
 
-    public HashMap<UUID, UUID> getTeamByPlayer() {
+    public HashMap<String, UUID> getTeamByPlayer() {
         return teamByPlayer;
     }
 
