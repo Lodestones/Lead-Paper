@@ -317,7 +317,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         new ArrayList<>(section.getStringList("invitations").stream().map(UUID::fromString).toList()),
                         EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
                         EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
-                        section.getBoolean("is_friendly_fire_allowed", false)
+                        section.getBoolean("is_friendly_fire_allowed", true)
                 );
                 teams.put(team.getUniqueId(), team);
             }
