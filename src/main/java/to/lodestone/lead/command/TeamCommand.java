@@ -19,6 +19,7 @@ import to.lodestone.bookshelfapi.api.util.EnumUtil;
 import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
 import to.lodestone.bookshelfapi.api.util.StringUtil;
 import to.lodestone.lead.LeadPlugin;
+import to.lodestone.lead.menu.TeamEditorMenu;
 import to.lodestone.lead.menu.TeamListMenu;
 import to.lodestone.lead.team.GeneratorType;
 import to.lodestone.lead.team.TeamMember;
@@ -43,6 +44,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("kick")
                 .permission(plugin.config().getString("commands.kick", null))
                 .withRequirement(sender -> {
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
                         return team != null && team.getLeaderUniqueId() != null && team.containsMember(team.getLeaderUniqueId()) && team.getLeaderUniqueId().toString().equalsIgnoreCase(player.getUniqueId().toString());
@@ -94,6 +97,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("leave")
                 .permission(plugin.config().getString("commands.leave", null))
                 .withRequirement(sender -> {
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
                         return team != null && team.getLeaderUniqueId() != null && !team.getLeaderUniqueId().toString().equalsIgnoreCase(player.getUniqueId().toString());
@@ -132,6 +137,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("disband")
                 .permission(plugin.config().getString("commands.disband", null))
                 .withRequirement(sender -> {
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
                         return team != null && team.getLeaderUniqueId() != null && team.containsMember(team.getLeaderUniqueId()) && team.getLeaderUniqueId().toString().equalsIgnoreCase(player.getUniqueId().toString());
@@ -169,9 +176,34 @@ public class TeamCommand extends Command {
                     }
                 })
         );
+        subCommand(new Command("edit")
+                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
+                .executesPlayer((player, args) -> {
+                    if (!plugin.isPremiumServer()) {
+                        player.sendMessage(Component.empty());
+                        player.sendMessage(MiniMessageUtil.deserialize("  <red><bold>UH OH! <reset><red>Looks like you found a premium feature!"));
+                        player.sendMessage(MiniMessageUtil.deserialize("  <red>Purchase a membership at our <hover:show_text:'<yellow>Purchase a membership here'><click:open_url:https://lode.gg/shop/memberships><underlined><yellow>shop<reset><red>."));
+                        player.sendMessage(MiniMessageUtil.deserialize("  <red>Need help? Join our <hover:show_text:'<#5C77FB>Join the Discord'><click:open_url:https://discord.gg/lodestone><underlined><#5C77FB>discord<reset><red>!"));
+                        player.sendMessage(Component.empty());
+                        return;
+                    }
+
+                    if (args.get(0) instanceof String id) {
+                        ITeam team = plugin.getTeam(id);
+                        if (team == null) {
+                            player.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
+                            return;
+                        }
+
+                        new TeamEditorMenu(plugin, player, team).open();
+                    }
+                })
+        );
         subCommand(new Command("invite")
                 .permission(plugin.config().getString("commands.invite", null))
                 .withRequirement(sender -> {
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
                         return team != null;
@@ -220,6 +252,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("create")
                 .permission(plugin.config().getString("commands.create", null))
                 .withRequirement(sender -> {
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
                         return team == null;
@@ -283,6 +317,40 @@ public class TeamCommand extends Command {
                     }
                 })
         );
+        subCommand(new Command("create")
+                .permission("lodestone.lead.manage")
+                .arguments(new StringArgument("id"))
+                .optionalArguments(new PlayerArgument("leader"))
+                .executesPlayer((player, args) -> {
+                    if (args.get(0) instanceof String id) {
+                        try {
+                            ITeam team = plugin.getTeam(id);
+                            if (team != null) {
+                                player.sendMessage(Component.text("That team already exists!").color(NamedTextColor.RED));
+                                return;
+                            }
+
+                            PreTeamCreateEvent teamCreateEvent = new PreTeamCreateEvent(player);
+                            if (teamCreateEvent.callEvent()) {
+                                UUID leaderUniqueId = args.get(1) instanceof Player leader ? leader.getUniqueId() : null;
+                                team = plugin.createTeam(id, leaderUniqueId);
+
+                                player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>TEAM CREATED\n  <reset><gray>You've created Team %s\n ", team.getId())));
+                                plugin.update();
+
+                                CommandAPI.updateRequirements(player);
+                                new PostTeamCreateEvent(player, team).callEvent();
+                            }
+                        } catch (TeamAlreadyExistsException e) {
+                            e.printStackTrace();
+                            player.sendMessage(MiniMessageUtil.deserialize("<red><bold>ERROR! Something went wrong, please try again!"));
+                        } catch (Exception err) {
+                            err.printStackTrace();
+                            player.sendMessage(MiniMessageUtil.deserialize("<red><bold>ERROR! An unexpected error has occurred! | %s", err.toString()));
+                        }
+                    }
+                })
+        );
         subCommand(new Command("reset")
                 .permission("lodestone.lead.commands.reset")
                 .executesPlayer((player, args) -> {
@@ -303,21 +371,11 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("reload")
-                .permission("lodestone.lead.commands.reload")
-                .optionalArguments(new StringArgument("-t"))
-                .executesPlayer((player, args) -> {
-                    boolean reloadTeams = args.get(0) instanceof String s && s.equalsIgnoreCase("-t");
-                    long timeAt = System.currentTimeMillis();
-                    player.sendMessage(MiniMessageUtil.deserialize("<italic><gray>[Lead: Reloading...]"));
-                    plugin.reload(reloadTeams);
-                    plugin.getServer().getOnlinePlayers().forEach(CommandAPI::updateRequirements);
-                    player.sendMessage(MiniMessageUtil.deserialize("<italic><gray>[Lead: Reloaded in %s ms!]", System.currentTimeMillis() - timeAt));
-                })
-        );
         subCommand(new Command("join")
                 .permission(plugin.config().getString("commands.join", null))
                 .withRequirement(sender -> {
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
                         return team == null;
@@ -412,6 +470,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("chat")
                 .permission(plugin.config().getString("commands.chat", null))
                 .withRequirement(sender -> {
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
                         return team != null;
@@ -493,6 +553,47 @@ public class TeamCommand extends Command {
 //                })
 //        );
         subCommand(new Command("modify")
+                .subCommand(new Command("color")
+                        .permission(plugin.config().getString("commands.color", null))
+                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_color"))
+                        .executes((sender, args) -> {
+                            if (args.get(0) instanceof String targetTeam) {
+                                if (args.get(1) instanceof String newTeamColor) {
+                                    ITeam team = plugin.getTeam(targetTeam);
+                                    if (team == null) {
+                                        sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
+                                        return;
+                                    }
+
+                                    String oldTeamColor = team.getColor();
+                                    PreTeamChangeIdEvent teamChangeNameEvent = new PreTeamChangeIdEvent(team, oldTeamColor, newTeamColor);
+                                    if (teamChangeNameEvent.callEvent()) {
+                                        if (!newTeamColor.matches("^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
+                                            sender.sendMessage(MiniMessageUtil.deserialize("That color isn't a valid hex color!").color(NamedTextColor.RED));
+                                            return;
+                                        }
+
+                                        if (!newTeamColor.startsWith("#")) newTeamColor = "#" + newTeamColor;
+
+                                        for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
+                                            Player p = plugin.getServer().getPlayer(playerUniqueId);
+                                            if (p != null)
+                                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>TEAM COLOR CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team color to <%s>%s<gray>!\n ", sender.getName(), newTeamColor, newTeamColor)));
+                                        }
+
+                                        team.setColor(newTeamColor);
+                                        sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed <%s>Team %s<white>'s color to <%s>%s!", team.getColor(), team.getId(), newTeamColor, newTeamColor)));
+                                        plugin.update();
+
+                                        if (sender instanceof Player player)
+                                            CommandAPI.updateRequirements(player);
+
+                                        new PostTeamChangeIdEvent(team, oldTeamColor, newTeamColor).callEvent();
+                                    }
+                                }
+                            }
+                        })
+                )
                 .subCommand(new Command("display_name")
                         .permission(plugin.config().getString("commands.display_name", null))
                         .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new GreedyStringArgument("new_name"))
@@ -735,47 +836,6 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("color")
-                .permission(plugin.config().getString("commands.color", null))
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_color"))
-                .executes((sender, args) -> {
-                    if (args.get(0) instanceof String targetTeam) {
-                        if (args.get(1) instanceof String newTeamColor) {
-                            ITeam team = plugin.getTeam(targetTeam);
-                            if (team == null) {
-                                sender.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
-                                return;
-                            }
-
-                            String oldTeamColor = team.getColor();
-                            PreTeamChangeIdEvent teamChangeNameEvent = new PreTeamChangeIdEvent(team, oldTeamColor, newTeamColor);
-                            if (teamChangeNameEvent.callEvent()) {
-                                if (!newTeamColor.matches("^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
-                                    sender.sendMessage(MiniMessageUtil.deserialize("That color isn't a valid hex color!").color(NamedTextColor.RED));
-                                    return;
-                                }
-
-                                if (!newTeamColor.startsWith("#")) newTeamColor = "#" + newTeamColor;
-
-                                for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
-                                    Player p = plugin.getServer().getPlayer(playerUniqueId);
-                                    if (p != null)
-                                        p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>TEAM COLOR CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team color to <%s>%s<gray>!\n ", sender.getName(), newTeamColor, newTeamColor)));
-                                }
-
-                                team.setColor(newTeamColor);
-                                sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed <%s>Team %s<white>'s color to <%s>%s!", team.getColor(), team.getId(), newTeamColor, newTeamColor)));
-                                plugin.update();
-
-                                if (sender instanceof Player player)
-                                    CommandAPI.updateRequirements(player);
-
-                                new PostTeamChangeIdEvent(team, oldTeamColor, newTeamColor).callEvent();
-                            }
-                        }
-                    }
-                })
-        );
         subCommand(
                 new Command("list")
                         .permission(plugin.config().getString("commands.list", null))
@@ -808,18 +868,18 @@ public class TeamCommand extends Command {
         sender.sendMessage(MiniMessageUtil.deserialize("<bold>Leader Commands"));
         sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team kick>/team click</click></yellow>"));
         sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team disband><hover:show_text:\"<yellow>Click to disband your team!\">/team disband</hover></click>"));
-        if (sender.hasPermission("lead.team.manage")) {
+        if (sender.hasPermission("lodestone.lead.manage")) {
             sender.sendMessage(MiniMessageUtil.deserialize(" "));
             sender.sendMessage(MiniMessageUtil.deserialize("<bold>Admin Commands"));
             sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team merge>/team merge <team_one_id> <team_two_id></click></yellow>"));
             sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team place>/team place <player> <team_id></click>"));
             sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team remove>/team remove <player></click>"));
             sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team delete>/team delete <team_id></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team color>/team color <team_id> <new_color></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team display_name>/team display_name <team_id> <display_name></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team collidable>/team collidable <team_id> <value></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team name_tag>/team name_tag <team_id> <value></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team friendly_fire>/team friendly_fire <team_id> <value></click>"));
+            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify color>/team modify color <team_id> <new_color></click>"));
+            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify display_name>/team modify display_name <team_id> <display_name></click>"));
+            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify collidable>/team modify collidable <team_id> <value></click>"));
+            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify name_tag>/team modify name_tag <team_id> <value></click>"));
+            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify friendly_fire>/team modify friendly_fire <team_id> <value></click>"));
         }
         sender.sendMessage(MiniMessageUtil.deserialize(" "));
     }

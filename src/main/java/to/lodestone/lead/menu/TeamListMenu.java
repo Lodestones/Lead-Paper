@@ -27,7 +27,7 @@ import java.util.List;
 
 public class TeamListMenu extends Menu {
 
-    private int page;
+    private final int page;
     private final LeadPlugin plugin;
 
     public TeamListMenu(LeadPlugin plugin, Player player, int page) {
@@ -66,7 +66,7 @@ public class TeamListMenu extends Menu {
                         event -> {
                             event.setCancelled(true);
                             player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                         })
 
         );

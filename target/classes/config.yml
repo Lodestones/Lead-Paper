@@ -3,41 +3,34 @@
 #  DO NOT TOUCH VERSION! YOU MAY BREAK YOUR CONFIGURATION IF YOU DO!  #
 #######################################################################
 debug: false
-version: 3
+version: 4
 max_team_size: 5
 default: # What the default setting is for whenever someone creates a team.
   friendly_fire: true
   collidable: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
   name_tag_visibility: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
-
-#########################################################################
-#                            Donation Key                               #
-# To give our supporters perks, if you wish to remove the join message, #
-#  you can input your ko-fi email here and if you have a membership of  #
-#    vip or above, your members will no longer receive join messages.   #
-#########################################################################
-donation_key: null
+  is_public: true # Will team commands be public or private?
 
 # Command Permission
 # Setting the permission to "null" will make the command public.
 commands:
+  help: null
+  list: null
   kick: null
-  leave: null
-  disband: null
   invite: null
   create: null
   join: null
-  teleport: "lodestone.lead.command.teleport"
+  leave: null
+  disband: null
   chat: null
-  friendly_fire: "lodestone.lead.commands.friendly_fire"
-  nametag: "lodestone.lead.commands.nametag"
-  collidable: "lodestone.lead.commands.collidable"
-  merge: "lodestone.lead.commands.merge"
-  place: "lodestone.lead.commands.place"
-  remove: "lodestone.lead.commands.remove"
-  delete: "lodestone.lead.commands.delete"
-  id: "lodestone.lead.commands.id"
-  display_name: "lodestone.lead.commands.display_name"
-  color: "lodestone.lead.commands.color"
-  list: null
-  help: null
+  teleport: "lodestone.lead.manage"
+  friendly_fire: "lodestone.lead.manage"
+  nametag: "lodestone.lead.manage"
+  collidable: "lodestone.lead.manage"
+  merge: "lodestone.lead.manage"
+  place: "lodestone.lead.manage"
+  remove: "lodestone.lead.manage"
+  delete: "lodestone.lead.manage"
+  id: "lodestone.lead.manage"
+  display_name: "lodestone.lead.manage"
+  color: "lodestone.lead.manage"

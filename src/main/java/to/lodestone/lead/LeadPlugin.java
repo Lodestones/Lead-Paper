@@ -13,12 +13,13 @@ import org.jetbrains.annotations.NotNull;
 import to.lodestone.bookshelfapi.BookshelfAPI;
 import to.lodestone.bookshelfapi.IBookshelfAPI;
 import to.lodestone.bookshelfapi.api.Configuration;
-import to.lodestone.bookshelfapi.api.KofiManager;
+import to.lodestone.bookshelfapi.api.PremiumManager;
 import to.lodestone.bookshelfapi.api.Task;
 import to.lodestone.bookshelfapi.api.VersionUpdater;
 import to.lodestone.bookshelfapi.api.util.EnumUtil;
 import to.lodestone.bookshelfapi.api.util.Metrics;
 import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
+import to.lodestone.lead.command.LeadCommand;
 import to.lodestone.lead.command.TeamCommand;
 import to.lodestone.lead.command.TeamMessageCommand;
 import to.lodestone.lead.listener.ChatListener;
@@ -39,8 +40,8 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.1.4";
-    private static final int CONFIG_VERSION = 3;
+    public static final String VERSION = "v1.1.5";
+    private static final int CONFIG_VERSION = 4;
     private static final String TEAMLESS_ID = "TEAMLESS";
 
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
@@ -52,7 +53,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private Configuration config;
     private Configuration team;
     private Configuration random;
-    private KofiManager kofiManager;
+    private PremiumManager premiumManager;
 
     @Override
     public void onLoad() {
@@ -96,15 +97,15 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
         getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://modrinth.com/plugin/lead", "https://api.modrinth.com/v2/project/lead/version", VERSION), this);
 
-        this.kofiManager = new KofiManager(config.getString("donation_key", null));
+        this.premiumManager = new PremiumManager(this);
     }
 
     public Configuration random() {
         return random;
     }
 
-    public boolean isKofiDonor() {
-        return this.kofiManager.isKofiDonor();
+    public boolean isPremiumServer() {
+        return this.premiumManager.isPremiumServer();
     }
 
     public IBookshelfAPI bookshelf() {
@@ -115,6 +116,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         CommandAPI.unregister("team", true);
         CommandAPI.unregister("teammsg", true);
 
+        new LeadCommand(this).register();
         new TeamMessageCommand(this).register();
         new TeamCommand(this).register();
     }
@@ -173,7 +175,6 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         long timeNow = System.currentTimeMillis();
         Task.runAsync(this, () -> {
             // Loop through the entire list.
-
             Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 
             // Create or get a team for players without a specific team
