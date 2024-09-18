@@ -2,6 +2,7 @@ package to.lodestone.lead.team;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import to.lodestone.bookshelfapi.api.util.EnumUtil;
 import to.lodestone.lead.LeadPlugin;
@@ -193,9 +194,9 @@ public class Team implements ITeam {
     }
 
     @Override
-    public void removeMember(ITeamMember member) {
-        this.members.removeIf(m -> m.getUniqueId().toString().equalsIgnoreCase(member.getUniqueId().toString()));
-        plugin.getTeamByPlayer().remove(member.getUniqueId().toString());
+    public void addMember(Player player) {
+        this.members.add(new TeamMember(player));
+        plugin.getTeamByPlayer().put(player.getUniqueId().toString(), this.getUniqueId());
         plugin.getPlayersByTeam().put(this.getUniqueId().toString(), new ArrayList<>(members.stream().map(ITeamMember::getUniqueId).toList()));
     }
 

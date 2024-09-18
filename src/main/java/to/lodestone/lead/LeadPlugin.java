@@ -31,6 +31,7 @@ import to.lodestone.leadapi.ILeadAPI;
 import to.lodestone.leadapi.LeadAPI;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
+import to.lodestone.leadapi.api.exception.MaxTeamLimitException;
 import to.lodestone.leadapi.api.exception.TeamAlreadyExistsException;
 import to.lodestone.leadapi.api.exception.TeamNotFoundException;
 
@@ -40,8 +41,8 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.1.5";
-    private static final int CONFIG_VERSION = 4;
+    public static final String VERSION = "v1.1.8";
+    private static final int CONFIG_VERSION = 5;
     private static final String TEAMLESS_ID = "TEAMLESS";
 
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
@@ -269,7 +270,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     @Override
     public ITeam createTeam(String id) throws TeamAlreadyExistsException {
         if (getTeam(id) != null) throw new TeamAlreadyExistsException();
-        List<String> randomColors = config().getStringList("available_hex_colors");
+        List<String> randomColors = random().getStringList("available_hex_colors");
         Team team = new Team(this, id, randomColors.size() == 0 ? "#FFFFFF" : randomColors.get(SEED.nextInt(randomColors.size())));
         teams.put(team.getUniqueId(), team);
         teamsById.put(team.getId(), team);
@@ -280,7 +281,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     @Override
     public ITeam createTeam(String id, UUID leader) throws TeamAlreadyExistsException {
         if (getTeam(id) != null) throw new TeamAlreadyExistsException();
-        List<String> randomColors = config().getStringList("available_hex_colors");
+        List<String> randomColors = random().getStringList("available_hex_colors");
         Team team = new Team(this, id, leader, randomColors.size() == 0 ? "#FFFFFF" : randomColors.get(SEED.nextInt(randomColors.size())));
         teams.put(team.getUniqueId(), team);
         teamsById.put(team.getId(), team);
@@ -307,13 +308,15 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                     }
                 }
 
+                UUID leaderUniqueId = section.getString("leaderUniqueId") == null ? null : UUID.fromString(Objects.requireNonNull(section.getString("leaderUniqueId")));
+
                 Team team = new Team(
                         this,
                         section.getString("id", section.getString("name")),
                         section.getString("name"),
                         section.getString("color", "#FFFFFF"),
                         UUID.fromString(teamUniqueId),
-                        UUID.fromString(Objects.requireNonNull(section.getString("leaderUniqueId"))),
+                        leaderUniqueId,
                         members,
                         new ArrayList<>(section.getStringList("invitations").stream().map(UUID::fromString).toList()),
                         EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),

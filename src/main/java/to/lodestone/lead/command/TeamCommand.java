@@ -287,7 +287,7 @@ public class TeamCommand extends Command {
                                     yield plugin.createTeam(teamNames.get(LeadPlugin.SEED.nextInt(teamNames.size())), player.getUniqueId());
                                 }
                                 case COLOR -> {
-                                    ConfigurationSection section = plugin.random().getConfigurationSection("available_hex_colors");
+                                    ConfigurationSection section = plugin.random().getConfigurationSection("connected_colors");
                                     if (section == null) throw new MaxTeamLimitException();
                                     Map<String, Object> teamColors = section.getValues(false);
                                     @SuppressWarnings("unchecked")
@@ -314,40 +314,6 @@ public class TeamCommand extends Command {
                     } catch (Exception err) {
                         err.printStackTrace();
                         player.sendMessage(MiniMessageUtil.deserialize("<red><bold>ERROR! An unexpected error has occurred! | %s", err.toString()));
-                    }
-                })
-        );
-        subCommand(new Command("create")
-                .permission("lodestone.lead.manage")
-                .arguments(new StringArgument("id"))
-                .optionalArguments(new PlayerArgument("leader"))
-                .executesPlayer((player, args) -> {
-                    if (args.get(0) instanceof String id) {
-                        try {
-                            ITeam team = plugin.getTeam(id);
-                            if (team != null) {
-                                player.sendMessage(Component.text("That team already exists!").color(NamedTextColor.RED));
-                                return;
-                            }
-
-                            PreTeamCreateEvent teamCreateEvent = new PreTeamCreateEvent(player);
-                            if (teamCreateEvent.callEvent()) {
-                                UUID leaderUniqueId = args.get(1) instanceof Player leader ? leader.getUniqueId() : null;
-                                team = plugin.createTeam(id, leaderUniqueId);
-
-                                player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>TEAM CREATED\n  <reset><gray>You've created Team %s\n ", team.getId())));
-                                plugin.update();
-
-                                CommandAPI.updateRequirements(player);
-                                new PostTeamCreateEvent(player, team).callEvent();
-                            }
-                        } catch (TeamAlreadyExistsException e) {
-                            e.printStackTrace();
-                            player.sendMessage(MiniMessageUtil.deserialize("<red><bold>ERROR! Something went wrong, please try again!"));
-                        } catch (Exception err) {
-                            err.printStackTrace();
-                            player.sendMessage(MiniMessageUtil.deserialize("<red><bold>ERROR! An unexpected error has occurred! | %s", err.toString()));
-                        }
                     }
                 })
         );

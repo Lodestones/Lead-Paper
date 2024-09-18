@@ -3,7 +3,7 @@
 #  DO NOT TOUCH VERSION! YOU MAY BREAK YOUR CONFIGURATION IF YOU DO!  #
 #######################################################################
 debug: false
-version: 4
+version: 5
 max_team_size: 5
 default: # What the default setting is for whenever someone creates a team.
   friendly_fire: true
