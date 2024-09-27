@@ -219,8 +219,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 @NotNull org.bukkit.scoreboard.Team bukkitTeam = Objects.requireNonNull(scoreboard.getTeam(team.getId()));
                 bukkitTeam.prefix(MiniMessageUtil.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
                 bukkitTeam.suffix(Component.empty());
-                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, config.getString("collision_rule"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS));
-                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, config.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS));
+                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, team.getCollidable());
+                bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, team.getNameTagVisibility());
                 bukkitTeam.setAllowFriendlyFire(team.isFriendlyFireAllowed());
 
                 // Remove any team members that are no longer a part of the lead team member list.

@@ -690,6 +690,7 @@ public class TeamCommand extends Command {
 
                                     team.setNameTagVisibility(status);
                                     sender.sendMessage(MiniMessageUtil.deserialize("Nametag visibility for team \"%s\" is now \"%s\"", team.getId(), StringUtil.titleCase(status.name(), true)));
+                                    plugin.update();
                                 }
                             }
                         })
