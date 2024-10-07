@@ -4,7 +4,7 @@
   <groupId>to.lodestone</groupId>
   <artifactId>Lead-Paper</artifactId>
   <name>Lead-Paper</name>
-  <version>1.1.8</version>
+  <version>1.1.91</version>
   <description>A lightweight plugin that creates visual teams showcased in Civilization or Battle Royale events.</description>
   <url>https://johnaqu1no.com</url>
   <build>
@@ -57,7 +57,7 @@
     <dependency>
       <groupId>to.lodestone</groupId>
       <artifactId>Bookshelf-API</artifactId>
-      <version>1.0.7</version>
+      <version>1.0.9</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

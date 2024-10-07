@@ -177,6 +177,7 @@ public class TeamCommand extends Command {
                 })
         );
         subCommand(new Command("edit")
+                .permission(plugin.config().getString("commands.edit", "lodestone.lead.manage"))
                 .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
                 .executesPlayer((player, args) -> {
                     if (!plugin.isPremiumServer()) {
@@ -519,6 +520,20 @@ public class TeamCommand extends Command {
 //                })
 //        );
         subCommand(new Command("modify")
+                .withRequirement((sender) -> {
+                    // does the sender have any of the permission that commands below require?
+                    return sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.teleport", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.friendly_fire", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.nametag", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.merge", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.place", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.remove", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.delete", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.id", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.display_name", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.color", "lodestone.lead.manage"))) ||
+                            sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.collidable", "lodestone.lead.manage")));
+                })
                 .subCommand(new Command("color")
                         .permission(plugin.config().getString("commands.color", null))
                         .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_color"))
@@ -654,6 +669,7 @@ public class TeamCommand extends Command {
                         })
                 )
                 .subCommand(new Command("friendly_fire")
+                        .permission(plugin.config().getString("commands.friendly_fire", null))
                         .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new BooleanArgument("value"))
                         .executes((sender, args) -> {
                             if (args.get(0) instanceof String targetTeam) {

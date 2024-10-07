@@ -41,7 +41,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.1.9";
+    public static final String VERSION = "v1.1.91";
     private static final int CONFIG_VERSION = 5;
     private static final String TEAMLESS_ID = "TEAMLESS";
 
@@ -81,14 +81,6 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
             getLogger().severe("=============================================");
         }
 
-        if (getServer().getPluginManager().isPluginEnabled("NoChatReports")) {
-            getLogger().severe("=============================================");
-            getLogger().severe("NoChatReports Plugin DETECTED!");
-            getLogger().severe("WARNING! Lead will MAY not display chat if you have another plugin that modifies chat.");
-            getLogger().severe("Lead is already a replacement for NoChatReports, you can uninstall it.");
-            getLogger().severe("=============================================");
-        }
-
         this.registerCommands();
 
         this.reload(true);
@@ -98,7 +90,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
         getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://modrinth.com/plugin/lead", "https://api.modrinth.com/v2/project/lead/version", VERSION), this);
 
-        this.premiumManager = new PremiumManager(this);
+        this.premiumManager = new PremiumManager();
     }
 
     public Configuration random() {

@@ -43,7 +43,6 @@ public class ChatListener implements Listener {
                     event.prefix(event.prefix().append(Component.empty().decoration(TextDecoration.BOLD, false)).append(Component.text(MiniMessageUtil.serialize(event.prefix()).isEmpty() ? "" : " ").append(newPrefix)));
             }
 
-            event.setModified(true);
             return;
         }
 

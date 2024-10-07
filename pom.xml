@@ -6,7 +6,7 @@
 
     <groupId>to.lodestone</groupId>
     <artifactId>Lead-Paper</artifactId>
-    <version>1.1.9</version>
+    <version>1.1.91</version>
     <packaging>jar</packaging>
 
     <name>Lead-Paper</name>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>to.lodestone</groupId>
             <artifactId>Bookshelf-API</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.9</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -16,6 +16,7 @@ default: # What the default setting is for whenever someone creates a team.
 commands:
   help: null
   list: null
+  edit: null
   kick: null
   invite: null
   create: null

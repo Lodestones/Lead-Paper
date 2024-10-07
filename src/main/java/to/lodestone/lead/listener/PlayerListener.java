@@ -26,7 +26,7 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            if (plugin.isPremiumServer()) {
+            if (!plugin.isPremiumServer() || plugin.config().getBoolean("watermark")) {
                 if (player.isOp()) {
                     player.sendMessage(Component.empty());
                     player.sendMessage(MiniMessageUtil.deserialize("  <yellow><bold>Lead - The Ultimate Teams Plugin"));
