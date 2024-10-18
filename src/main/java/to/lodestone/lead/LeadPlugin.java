@@ -41,7 +41,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.1.91";
+    public static final String VERSION = "v1.1.92";
     private static final int CONFIG_VERSION = 5;
     private static final String TEAMLESS_ID = "TEAMLESS";
 
@@ -201,6 +201,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
             // Create any teams that haven't been created yet.
             for (ITeam team : getTeams().stream().filter(leadTeam -> scoreboard.getTeams().stream().noneMatch(bukkitTeam -> bukkitTeam.getName().equals(leadTeam.getId())))
                     .toList()) {
+                if (team.getId() == null) continue;
                 if (config().getBoolean("debug"))
                     Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating scoreboard team named %s.]", team.getId()), "lead.debug");
                 scoreboard.registerNewTeam(team.getId());
@@ -208,6 +209,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
             // Loop through every team now that we know that these teams exist.
             for (ITeam team : getTeams()) {
+                if (team.getName() == null) continue;
                 @NotNull org.bukkit.scoreboard.Team bukkitTeam = Objects.requireNonNull(scoreboard.getTeam(team.getId()));
                 bukkitTeam.prefix(MiniMessageUtil.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
                 bukkitTeam.suffix(Component.empty());
@@ -217,6 +219,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
                 // Remove any team members that are no longer a part of the lead team member list.
                 for (String bukkitMember : bukkitTeam.getEntries()) {
+                    if (bukkitMember == null) continue;
                     if (team.getMembers().stream().noneMatch(leadMember -> leadMember.getName().equals(bukkitMember))) {
                         if (config().getBoolean("debug"))
                             Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from scoreboard team %s.]", bukkitMember, team.getId()), "lead.debug");
@@ -226,6 +229,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
                 // Create any team members that haven't been created yet.
                 for (ITeamMember leadMember : team.getMembers().stream().filter(leadMember -> !bukkitTeam.hasEntry(leadMember.getName())).toList()) {
+                    if (leadMember.getName() == null) continue;
                     if (config().getBoolean("debug"))
                         Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Adding %s to scoreboard team %s.]", leadMember.getName(), team.getId()), "lead.debug");
                     bukkitTeam.addEntry(leadMember.getName());
