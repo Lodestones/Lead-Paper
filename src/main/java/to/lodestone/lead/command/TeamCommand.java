@@ -86,10 +86,12 @@ public class TeamCommand extends Command {
                             }
 
                             team.removeMember(target.getUniqueId());
-                            plugin.update();
+                            if (plugin.config().getBoolean("automatic_updates", true))
+                                plugin.update();
 
                             CommandAPI.updateRequirements(player);
                             new PostTeamKickEvent(team, target).callEvent();
+                            new PostTeamLeaveEvent(target, team).callEvent();
                         }
                     }
                 })
@@ -127,7 +129,8 @@ public class TeamCommand extends Command {
                         }
 
                         team.removeMember(player.getUniqueId());
-                        plugin.update();
+                        if (plugin.config().getBoolean("automatic_updates", true))
+                            plugin.update();
                         CommandAPI.updateRequirements(player);
 
                         new PostTeamLeaveEvent(player, team).callEvent();
@@ -169,7 +172,8 @@ public class TeamCommand extends Command {
                         this.cooldowns.put(player.getUniqueId(), System.currentTimeMillis() + (player.isOp() ? 3000 : 10000));
 
                         plugin.deleteTeam(team);
-                        plugin.update();
+                        if (plugin.config().getBoolean("automatic_updates", true))
+                            plugin.update();
 
                         CommandAPI.updateRequirements(player);
                         new PostTeamDisbandEvent(team).callEvent();
@@ -270,6 +274,11 @@ public class TeamCommand extends Command {
                             return;
                         }
 
+                        if (plugin.getTeams().size() >= plugin.config().getInt("max_teams", 100)) {
+                            player.sendMessage(Component.text("The maximum amount of teams has been reached!").color(NamedTextColor.RED));
+                            return;
+                        }
+
                         ITeam team = plugin.getTeam(player.getUniqueId());
                         if (team != null) {
                             player.sendMessage(Component.text("You are already in a team!").color(NamedTextColor.RED));
@@ -304,7 +313,8 @@ public class TeamCommand extends Command {
                             team.addMember(new TeamMember(player));
 
                             player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>TEAM CREATED\n  <reset><gray>You've created Team %s\n ", team.getId())));
-                            plugin.update();
+                            if (plugin.config().getBoolean("automatic_updates", true))
+                                plugin.update();
 
                             CommandAPI.updateRequirements(player);
                             new PostTeamCreateEvent(player, team).callEvent();
@@ -391,7 +401,8 @@ public class TeamCommand extends Command {
                                     p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
                             }
 
-                            plugin.update();
+                            if (plugin.config().getBoolean("automatic_updates", true))
+                                plugin.update();
                             CommandAPI.updateRequirements(player);
                             new PostTeamJoinEvent(team, player).callEvent();
                         }
@@ -502,7 +513,8 @@ public class TeamCommand extends Command {
                                 plugin.deleteTeam(teamTwo);
 
                                 sender.sendMessage(MiniMessageUtil.deserialize(String.format("Merged <yellow>%s <white>members to Team %s", teamTwo.getMembers().size(), teamOne.getId())));
-                                plugin.update();
+                                if (plugin.config().getBoolean("automatic_updates", true))
+                                    plugin.update();
 
                                 if (sender instanceof Player player)
                                     CommandAPI.updateRequirements(player);
@@ -513,12 +525,13 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-//        subCommand(new Command("update")
-//                .permission("lodestone.lead.commands.update")
-//                .executesPlayer((player, args) -> {
-//                    plugin.update();
-//                })
-//        );
+        subCommand(new Command("update")
+                .permission("lodestone.lead.commands.update")
+                .executesPlayer((player, args) -> {
+                    plugin.update();
+                    player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully updated all teams!"));
+                })
+        );
         subCommand(new Command("modify")
                 .withRequirement((sender) -> {
                     // does the sender have any of the permission that commands below require?
@@ -564,7 +577,8 @@ public class TeamCommand extends Command {
 
                                         team.setColor(newTeamColor);
                                         sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed <%s>Team %s<white>'s color to <%s>%s!", team.getColor(), team.getId(), newTeamColor, newTeamColor)));
-                                        plugin.update();
+                                        if (plugin.config().getBoolean("automatic_updates", true))
+                                            plugin.update();
 
                                         if (sender instanceof Player player)
                                             CommandAPI.updateRequirements(player);
@@ -633,7 +647,8 @@ public class TeamCommand extends Command {
                                         team.setId(newTeamId);
                                         team.setName(newTeamId);
                                         sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed the team with an id of %s<white> to <yellow>%s!", oldTeamId, newTeamId)));
-                                        plugin.update();
+                                        if (plugin.config().getBoolean("automatic_updates", true))
+                                            plugin.update();
 
                                         if (sender instanceof Player player)
                                             CommandAPI.updateRequirements(player);
@@ -706,7 +721,8 @@ public class TeamCommand extends Command {
 
                                     team.setNameTagVisibility(status);
                                     sender.sendMessage(MiniMessageUtil.deserialize("Nametag visibility for team \"%s\" is now \"%s\"", team.getId(), StringUtil.titleCase(status.name(), true)));
-                                    plugin.update();
+                                    if (plugin.config().getBoolean("automatic_updates", true))
+                                        plugin.update();
                                 }
                             }
                         })
@@ -744,7 +760,8 @@ public class TeamCommand extends Command {
                                 }
 
                                 sender.sendMessage(MiniMessageUtil.deserialize(String.format("Added <yellow>%s <white>to <%s>Team %s", target.getName(), team.getColor(), team.getId())));
-                                plugin.update();
+                                if (plugin.config().getBoolean("automatic_updates", true))
+                                    plugin.update();
 
                                 if (sender instanceof Player player)
                                     CommandAPI.updateRequirements(player);
@@ -777,7 +794,8 @@ public class TeamCommand extends Command {
                             team.removeMember(target.getUniqueId());
 
                             sender.sendMessage(MiniMessageUtil.deserialize(String.format("Removed <yellow>%s <white>from <%s>Team %s", target.getName(), team.getColor(), team.getId())));
-                            plugin.update();
+                            if (plugin.config().getBoolean("automatic_updates", true))
+                                plugin.update();
 
                             if (sender instanceof Player player)
                                 CommandAPI.updateRequirements(player);
@@ -807,7 +825,8 @@ public class TeamCommand extends Command {
                             }
 
                             plugin.deleteTeam(team);
-                            plugin.update();
+                            if (plugin.config().getBoolean("automatic_updates", true))
+                                plugin.update();
 
                             if (sender instanceof Player player)
                                 CommandAPI.updateRequirements(player);

@@ -5,7 +5,8 @@ api-version: '1.20'
 authors: [Apollo30]
 description: A lightweight plugin that creates visual teams showcased in Civilization or Battle Royale events. 
 website: https://lodestone.to
-load: STARTUP
 depend:
   - CommandAPI
   - Bookshelf
+softdepend:
+  - TAB

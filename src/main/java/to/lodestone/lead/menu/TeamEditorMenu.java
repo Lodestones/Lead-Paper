@@ -58,7 +58,8 @@ public class TeamEditorMenu extends Menu {
 
                                             if (input.matches("[a-zA-Z0-9_]+")) {
                                                 team.setId(input);
-                                                plugin.update();
+                                                if (plugin.config().getBoolean("automatic_updates", true))
+                                                    plugin.update();
                                                 player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set the team id to %s.", team.getId()));
                                                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                                                 Task.later(plugin, () -> new TeamEditorMenu(plugin, player, team).open(), 1);
@@ -87,7 +88,8 @@ public class TeamEditorMenu extends Menu {
                                             }
 
                                             team.setName(input);
-                                            plugin.update();
+                                            if (plugin.config().getBoolean("automatic_updates", true))
+                                                plugin.update();
                                             player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set the team name to %s.", team.getName()));
                                             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                                             Task.later(plugin, () -> new TeamEditorMenu(plugin, player, team).open(), 1);
@@ -103,7 +105,8 @@ public class TeamEditorMenu extends Menu {
                                 team.setCollidable(Team.OptionStatus.values()[(ordinal + 1) % Team.OptionStatus.values().length]);
                                 new TeamEditorMenu(plugin, player, team).open();
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
-                                plugin.update();
+                                if (plugin.config().getBoolean("automatic_updates", true))
+                                    plugin.update();
                             })
                             .setSlot(4, new ItemBuilder(Material.POTION).flags(ItemFlag.HIDE_ATTRIBUTES).addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 1, 1)).potionColor(Color.WHITE).title("Name Tag Visibility").lore(String.format("<gray>Currently: <white>%s", team.getNameTagVisibility().name())).build(), event -> {
                                 event.setCancelled(true);
@@ -111,14 +114,16 @@ public class TeamEditorMenu extends Menu {
                                 team.setNameTagVisibility(Team.OptionStatus.values()[(ordinal + 1) % Team.OptionStatus.values().length]);
                                 new TeamEditorMenu(plugin, player, team).open();
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
-                                plugin.update();
+                                if (plugin.config().getBoolean("automatic_updates", true))
+                                    plugin.update();
                             })
                             .setSlot(5, new ItemBuilder(Material.GOLDEN_SWORD).title("Friendly Fire").lore(team.isFriendlyFireAllowed() ? "<green>Enabled" : "<red>Disabled").build(), event -> {
                                 event.setCancelled(true);
                                 team.setFriendlyFireAllowed(!team.isFriendlyFireAllowed());
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                                 new TeamEditorMenu(plugin, player, team).open();
-                                plugin.update();
+                                if (plugin.config().getBoolean("automatic_updates", true))
+                                    plugin.update();
                             })
                             .setSlot(6, new ItemBuilder(Material.WHITE_WOOL).title("Color").lore(String.format("<gray>Currently: <white>%s", team.getColor())).build(), event -> {
                                 event.setCancelled(true);
@@ -138,7 +143,8 @@ public class TeamEditorMenu extends Menu {
                                                 if (!input.startsWith("#")) input = "#" + input;
 
                                                 team.setColor(input);
-                                                plugin.update();
+                                                if (plugin.config().getBoolean("automatic_updates", true))
+                                                    plugin.update();
                                                 player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set the team color to <%s>%s.", team.getColor(), team.getColor()));
                                                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                                                 Task.later(plugin, () -> new TeamEditorMenu(plugin, player, team).open(), 1);
