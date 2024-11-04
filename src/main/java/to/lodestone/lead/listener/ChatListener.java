@@ -36,7 +36,6 @@ public class ChatListener implements Listener {
                 event.playerColor(team.getColor());
             } else {
                 Component newPrefix = MiniMessageUtil.deserialize("<%s>%s", team.getColor(), team.getName());
-                event.playerColor(team.getColor());
                 if (event.prefix() == null)
                     event.prefix(newPrefix);
                 else

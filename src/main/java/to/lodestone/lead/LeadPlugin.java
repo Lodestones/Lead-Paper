@@ -44,7 +44,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.0";
+    public static final String VERSION = "v1.2.1";
     private static final int CONFIG_VERSION = 6;
     private static final String TEAMLESS_ID = "TEAMLESS";
 
@@ -194,7 +194,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                             continue;
                         }
 
-                        Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, String.format("<%s>%s ", team.getColor(), team.getName()));
+                        Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, String.format("<%s>%s <reset>", team.getColor(), team.getName()));
                     }
                 } else {
                     // Loop through the entire list.
@@ -277,11 +277,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         }
                     }
 
-                    if (config.getBoolean("update")) {
-                        for (Player plr : getServer().getOnlinePlayers()) {
-                            plr.setScoreboard(scoreboard);
-
-                        }
+                    for (Player plr : getServer().getOnlinePlayers()) {
+                        plr.setScoreboard(scoreboard);
                     }
 
                     if (config().getBoolean("debug"))
