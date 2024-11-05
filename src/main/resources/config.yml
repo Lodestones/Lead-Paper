@@ -18,7 +18,7 @@ default: # What the default setting is for whenever someone creates a team.
   name_tag_visibility: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
   is_public: true # Will team commands be public or private?
 max_teams: 1000 # The maximum amount of teams that can be created.
-automatic_updates: false # If false, you will need to manually update the player tab using /team update.
+automatic_updates: true # If false, you will need to manually update the player tab using /team update.
 
 # Command Permission
 # Setting the permission to "null" will make the command public.

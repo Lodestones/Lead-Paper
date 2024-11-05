@@ -29,6 +29,7 @@ public class ChatListener implements Listener {
             assert teamMember != null;
 
             event.messageColor("#FFFFFF");
+            event.playerColor("#FFFFFF");
 
             if (teamMember.isInTeamChat()) {
                 event.setViewers(team.getMembers().stream().map(ITeamMember::getUniqueId).toList());
