@@ -44,7 +44,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.11";
+    public static final String VERSION = "v1.2.12";
     private static final int CONFIG_VERSION = 6;
     private static final String TEAMLESS_ID = "TEAMLESS";
 
@@ -191,9 +191,13 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         @Nullable ITeam team = getTeam(onlinePlayer.getUniqueId());
                         if (team == null) {
                             Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, null);
+                            Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, null);
+                            onlinePlayer.setTemporaryGroup(null);
                             continue;
                         }
 
+                        onlinePlayer.setTemporaryGroup(team.getId());
+                        Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, String.format("<%s>%s <reset>", team.getColor(), team.getName()));
                         Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, String.format("<%s>%s <reset>", team.getColor(), team.getName()));
                     }
                 } else {

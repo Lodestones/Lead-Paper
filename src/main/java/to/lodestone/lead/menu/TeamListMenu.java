@@ -68,7 +68,6 @@ public class TeamListMenu extends Menu {
                             player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                         })
-
         );
 
         int[] _c = {1, 1};
