@@ -184,15 +184,6 @@ public class TeamCommand extends Command {
                 .permission(plugin.config().getString("commands.edit", "lodestone.lead.manage"))
                 .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
                 .executesPlayer((player, args) -> {
-                    if (!plugin.isPremiumServer()) {
-                        player.sendMessage(Component.empty());
-                        player.sendMessage(MiniMessageUtil.deserialize("  <red><bold>UH OH! <reset><red>Looks like you found a premium feature!"));
-                        player.sendMessage(MiniMessageUtil.deserialize("  <red>Purchase a membership at our <hover:show_text:'<yellow>Purchase a membership here'><click:open_url:https://lode.gg/shop/memberships><underlined><yellow>shop<reset><red>."));
-                        player.sendMessage(MiniMessageUtil.deserialize("  <red>Need help? Join our <hover:show_text:'<#5C77FB>Join the Discord'><click:open_url:https://discord.gg/lodestone><underlined><#5C77FB>discord<reset><red>!"));
-                        player.sendMessage(Component.empty());
-                        return;
-                    }
-
                     if (args.get(0) instanceof String id) {
                         ITeam team = plugin.getTeam(id);
                         if (team == null) {
@@ -663,6 +654,11 @@ public class TeamCommand extends Command {
                         .permission(plugin.config().getString("commands.collidable", null))
                         .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
                         .executes((sender, args) -> {
+                            if (plugin.isTABPresent()) {
+                                sender.sendMessage(MiniMessageUtil.deserialize("<red>That feature is not available with TAB!"));
+                                return;
+                            }
+
                             if (args.get(0) instanceof String targetTeam) {
                                 ITeam team = plugin.getTeam(targetTeam);
                                 if (team == null) {
@@ -705,6 +701,11 @@ public class TeamCommand extends Command {
                         .permission(plugin.config().getString("commands.nametag", null))
                         .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
                         .executes((sender, args) -> {
+                            if (plugin.isTABPresent()) {
+                                sender.sendMessage(MiniMessageUtil.deserialize("<red>That feature is not available with TAB!"));
+                                return;
+                            }
+
                             if (args.get(0) instanceof String targetTeam) {
                                 ITeam team = plugin.getTeam(targetTeam);
                                 if (team == null) {

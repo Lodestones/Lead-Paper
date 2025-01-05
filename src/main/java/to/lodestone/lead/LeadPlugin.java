@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import to.lodestone.bookshelfapi.BookshelfAPI;
 import to.lodestone.bookshelfapi.IBookshelfAPI;
 import to.lodestone.bookshelfapi.api.Configuration;
-import to.lodestone.bookshelfapi.api.PremiumManager;
 import to.lodestone.bookshelfapi.api.Task;
 import to.lodestone.bookshelfapi.api.VersionUpdater;
 import to.lodestone.bookshelfapi.api.util.EnumUtil;
@@ -44,8 +43,9 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.12";
+    public static final String VERSION = "v1.2.13";
     private static final int CONFIG_VERSION = 6;
+
     private static final String TEAMLESS_ID = "TEAMLESS";
 
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
@@ -57,7 +57,6 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private Configuration config;
     private Configuration team;
     private Configuration random;
-    private PremiumManager premiumManager;
     private boolean isTABPresent;
 
     @Override
@@ -86,8 +85,6 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
         getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://modrinth.com/plugin/lead", "https://api.modrinth.com/v2/project/lead/version", VERSION), this);
 
-        this.premiumManager = new PremiumManager();
-
         this.isTABPresent = getServer().getPluginManager().isPluginEnabled("TAB");
         if (this.isTABPresent) {
             getLogger().warning("==========================================");
@@ -109,10 +106,6 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     public Configuration random() {
         return random;
-    }
-
-    public boolean isPremiumServer() {
-        return this.premiumManager.isPremiumServer();
     }
 
     public IBookshelfAPI bookshelf() {
@@ -162,6 +155,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         return getTeam(member) != null;
     }
 
+    @Override
     public String getAvailableTeamNumber() {
         List<String> numbers = new ArrayList<>();
         for (int i = 1; i <= config().getInt("max_teams", 1000); i++) {
@@ -197,6 +191,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         }
 
                         onlinePlayer.setTemporaryGroup(team.getId());
+                        Objects.requireNonNull(tabApiInstance.getSortingManager()).forceTeamName(onlinePlayer, team.getId());
                         Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, String.format("<%s>%s <reset>", team.getColor(), team.getName()));
                         Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, String.format("<%s>%s <reset>", team.getColor(), team.getName()));
                     }
@@ -292,6 +287,10 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 e.printStackTrace();
             }
         });
+    }
+
+    public boolean isTABPresent() {
+        return isTABPresent;
     }
 
     @Override

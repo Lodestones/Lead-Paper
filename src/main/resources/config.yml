@@ -1,9 +1,3 @@
-# These settings only apply if you whitelisted your server ip at https://lode.gg/dashboard/settings
-# You are required to own Iron, Gold, or Diamond rank to use this feature.
-# You can purchase a rank at https://lode.gg/memberships
-license_key: ""
-watermark: true
-
 #######################################################################
 #                       General Configuration                         #
 #  DO NOT TOUCH VERSION! YOU MAY BREAK YOUR CONFIGURATION IF YOU DO!  #
