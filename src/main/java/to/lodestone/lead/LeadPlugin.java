@@ -31,8 +31,10 @@ import to.lodestone.lead.team.Team;
 import to.lodestone.lead.team.TeamMember;
 import to.lodestone.leadapi.ILeadAPI;
 import to.lodestone.leadapi.LeadAPI;
+import to.lodestone.leadapi.api.GeneratorType;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
+import to.lodestone.leadapi.api.exception.MaxTeamLimitException;
 import to.lodestone.leadapi.api.exception.TeamAlreadyExistsException;
 import to.lodestone.leadapi.api.exception.TeamNotFoundException;
 
@@ -43,8 +45,8 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.13";
-    private static final int CONFIG_VERSION = 6;
+    public static final String VERSION = "v1.2.14";
+    private static final int CONFIG_VERSION = 7;
 
     private static final String TEAMLESS_ID = "TEAMLESS";
 
@@ -76,6 +78,14 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     @Override
     public void onEnable() {
         new Metrics(this, 22603); // bStats
+
+        if (config().getInt("version") != CONFIG_VERSION) {
+            getLogger().severe("==========================================");
+            getLogger().severe("OUTDATED CONFIGURATION FILE");
+            getLogger().severe("Your configuration file is outdated. Please delete your config.yml and restart the server.");
+            getLogger().severe("Lead may not function properly because of this!");
+            getLogger().severe("==========================================");
+        }
 
         this.registerCommands();
         this.reload(true);
@@ -190,10 +200,23 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                             continue;
                         }
 
-                        onlinePlayer.setTemporaryGroup(team.getId());
-                        Objects.requireNonNull(tabApiInstance.getSortingManager()).forceTeamName(onlinePlayer, team.getId());
-                        Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, String.format("<%s>%s <reset>", team.getColor(), team.getName()));
-                        Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, String.format("<%s>%s <reset>", team.getColor(), team.getName()));
+                        if (config().getBoolean("set_temporary_group", false))
+                            onlinePlayer.setTemporaryGroup(team.getId());
+
+                        // max 16 characters
+                        String fontToUse = config().getString("font", "default");
+                        Objects.requireNonNull(tabApiInstance.getSortingManager()).forceTeamName(onlinePlayer, team.getId().substring(0, Math.min(16, team.getId().length())));
+
+                        String formattedPrefix = String.format(
+                                "<font:%s><%s>%s</font>%s",
+                                fontToUse,
+                                team.getColor(),
+                                team.getName(),
+                                team.getName().isEmpty() ? "" : String.format("<%s> ", config().getBoolean("color_names") ? team.getColor() : "reset")
+                        );
+
+                        Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, formattedPrefix);
+                        Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, formattedPrefix);
                     }
                 } else {
                     // Loop through the entire list.
@@ -289,22 +312,96 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         });
     }
 
+    @Override
+    public ITeam createTeamWithUniqueColor(Player player, String id, String name) throws MaxTeamLimitException, TeamAlreadyExistsException {
+        ConfigurationSection section = random().getConfigurationSection("connected_colors");
+        if (section == null) throw new MaxTeamLimitException();
+        Map<String, Object> teamColors = section.getValues(false);
+        @SuppressWarnings("unchecked")
+        Map.Entry<String, Object> entry = (Map.Entry<String, Object>) teamColors.entrySet().toArray()[LeadPlugin.SEED.nextInt(teamColors.size())];
+        ITeam iTeam = createTeamByColor(id, player.getUniqueId(), entry.getKey());
+        iTeam.setName(name);
+        iTeam.addMember(player);
+        return iTeam;
+    }
+
+    @Override
+    public ITeam createTeamByType(Player player, String name, GeneratorType generatorType) throws MaxTeamLimitException, TeamAlreadyExistsException {
+        ITeam iTeam = switch (generatorType) {
+            case NUMBER -> {
+                String number = getAvailableTeamNumber();
+                yield createTeamWithLeader(number, player.getUniqueId());
+            }
+            case NAME -> {
+                List<String> teamNames = random().getStringList("available_names");
+                yield createTeamWithLeader(teamNames.get(LeadPlugin.SEED.nextInt(teamNames.size())), player.getUniqueId());
+            }
+            case COLOR -> {
+                ConfigurationSection section = random().getConfigurationSection("connected_colors");
+                if (section == null) throw new MaxTeamLimitException();
+                Map<String, Object> teamColors = section.getValues(false);
+                @SuppressWarnings("unchecked")
+                Map.Entry<String, Object> entry = (Map.Entry<String, Object>) teamColors.entrySet().toArray()[LeadPlugin.SEED.nextInt(teamColors.size())];
+                yield createTeamByColor((String) entry.getValue(), player.getUniqueId(), entry.getKey());
+            }
+            case UNICODE -> {
+                String unicode = random().getString("unicode");
+                yield createTeamWithLeader(unicode, player.getUniqueId());
+            }
+        };
+
+        iTeam.setName(name);
+        iTeam.addMember(player);
+        return iTeam;
+    }
+
+    @Override
+    public ITeam createTeamByType(Player player, GeneratorType teamType) throws MaxTeamLimitException, TeamAlreadyExistsException {
+        ITeam iTeam = switch (teamType) {
+            case NUMBER -> {
+                String number = getAvailableTeamNumber();
+                yield createTeamWithLeader(number, player.getUniqueId());
+            }
+            case NAME -> {
+                List<String> teamNames = random().getStringList("available_names");
+                yield createTeamWithLeader(teamNames.get(LeadPlugin.SEED.nextInt(teamNames.size())), player.getUniqueId());
+            }
+            case COLOR -> {
+                ConfigurationSection section = random().getConfigurationSection("connected_colors");
+                if (section == null) throw new MaxTeamLimitException();
+                Map<String, Object> teamColors = section.getValues(false);
+                @SuppressWarnings("unchecked")
+                Map.Entry<String, Object> entry = (Map.Entry<String, Object>) teamColors.entrySet().toArray()[LeadPlugin.SEED.nextInt(teamColors.size())];
+                yield createTeamByColor((String) entry.getValue(), player.getUniqueId(), entry.getKey());
+            }
+            case UNICODE -> {
+                String unicode = random().getString("unicode");
+                yield createTeamWithLeader(unicode, player.getUniqueId());
+            }
+        };
+
+        iTeam.addMember(player);
+        return iTeam;
+    }
+
     public boolean isTABPresent() {
         return isTABPresent;
     }
 
     @Override
-    public ITeam createTeam(String id, UUID leader, String color) throws TeamAlreadyExistsException {
+    public ITeam createTeamByColor(String id, UUID leader, String color) throws TeamAlreadyExistsException {
         if (getTeam(id) != null) throw new TeamAlreadyExistsException();
         Team team = new Team(this, id, leader, color);
         teams.put(team.getUniqueId(), team);
         teamsById.put(team.getId(), team);
         playersByTeam.put(team.getUniqueId().toString(), new ArrayList<>());
+        Player player = getServer().getPlayer(leader);
+        if (player != null) team.addMember(player);
         return team;
     }
 
     @Override
-    public ITeam createTeam(String id) throws TeamAlreadyExistsException {
+    public ITeam createTeamById(String id) throws TeamAlreadyExistsException {
         if (getTeam(id) != null) throw new TeamAlreadyExistsException();
         List<String> randomColors = random().getStringList("available_hex_colors");
         Team team = new Team(this, id, randomColors.size() == 0 ? "#FFFFFF" : randomColors.get(SEED.nextInt(randomColors.size())));
@@ -315,13 +412,15 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     }
 
     @Override
-    public ITeam createTeam(String id, UUID leader) throws TeamAlreadyExistsException {
+    public ITeam createTeamWithLeader(String id, UUID leader) throws TeamAlreadyExistsException {
         if (getTeam(id) != null) throw new TeamAlreadyExistsException();
         List<String> randomColors = random().getStringList("available_hex_colors");
         Team team = new Team(this, id, leader, randomColors.size() == 0 ? "#FFFFFF" : randomColors.get(SEED.nextInt(randomColors.size())));
         teams.put(team.getUniqueId(), team);
         teamsById.put(team.getId(), team);
         playersByTeam.put(team.getUniqueId().toString(), new ArrayList<>());
+        Player player = getServer().getPlayer(leader);
+        if (player != null) team.addMember(player);
         return team;
     }
 

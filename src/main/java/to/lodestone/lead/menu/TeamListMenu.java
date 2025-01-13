@@ -80,7 +80,7 @@ public class TeamListMenu extends Menu {
 
             ItemStack listHead = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) listHead.getItemMeta();
-            meta.displayName(MiniMessageUtil.deserialize(String.format("<reset><%s>%s", team.getColor(), team.getName())).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(MiniMessageUtil.deserialize(String.format("<reset><font:%s><%s>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName())).decoration(TextDecoration.ITALIC, false));
             List<Component> lores = new ArrayList<>();
             List<ITeamMember> members = new ArrayList<>(team.getMembers());
             members.sort((a, b) -> {

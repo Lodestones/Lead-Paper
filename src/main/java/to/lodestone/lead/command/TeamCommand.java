@@ -9,7 +9,6 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -21,12 +20,11 @@ import to.lodestone.bookshelfapi.api.util.StringUtil;
 import to.lodestone.lead.LeadPlugin;
 import to.lodestone.lead.menu.TeamEditorMenu;
 import to.lodestone.lead.menu.TeamListMenu;
-import to.lodestone.lead.team.GeneratorType;
+import to.lodestone.leadapi.api.GeneratorType;
 import to.lodestone.lead.team.TeamMember;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 import to.lodestone.leadapi.api.event.*;
-import to.lodestone.leadapi.api.exception.MaxTeamLimitException;
 import to.lodestone.leadapi.api.exception.TeamAlreadyExistsException;
 
 import java.util.*;
@@ -278,29 +276,7 @@ public class TeamCommand extends Command {
 
                         PreTeamCreateEvent teamCreateEvent = new PreTeamCreateEvent(player);
                         if (teamCreateEvent.callEvent()) {
-                            team = switch (EnumUtil.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NAME)) {
-                                case NUMBER -> {
-                                    String number = plugin.getAvailableTeamNumber();
-                                    yield plugin.createTeam(number, player.getUniqueId());
-                                }
-                                case NAME -> {
-                                    List<String> teamNames = plugin.random().getStringList("available_names");
-                                    yield plugin.createTeam(teamNames.get(LeadPlugin.SEED.nextInt(teamNames.size())), player.getUniqueId());
-                                }
-                                case COLOR -> {
-                                    ConfigurationSection section = plugin.random().getConfigurationSection("connected_colors");
-                                    if (section == null) throw new MaxTeamLimitException();
-                                    Map<String, Object> teamColors = section.getValues(false);
-                                    @SuppressWarnings("unchecked")
-                                    Map.Entry<String, Object> entry = (Map.Entry<String, Object>) teamColors.entrySet().toArray()[LeadPlugin.SEED.nextInt(teamColors.size())];
-                                    yield plugin.createTeam((String) entry.getValue(), player.getUniqueId(), entry.getKey());
-                                }
-                                case UNICODE -> {
-                                    String unicode = plugin.random().getString("unicode");
-                                    yield plugin.createTeam(unicode, player.getUniqueId());
-                                }
-                            };
-
+                            team = plugin.createTeamByType(player, EnumUtil.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NAME));
                             team.addMember(new TeamMember(player));
 
                             player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>TEAM CREATED\n  <reset><gray>You've created Team %s\n ", team.getId())));
@@ -310,10 +286,7 @@ public class TeamCommand extends Command {
                             CommandAPI.updateRequirements(player);
                             new PostTeamCreateEvent(player, team).callEvent();
                         }
-                    } catch (TeamAlreadyExistsException e) {
-                        e.printStackTrace();
-                        player.sendMessage(MiniMessageUtil.deserialize("<red><bold>ERROR! Something went wrong, please try again!"));
-                    } catch (Exception err) {
+                    } catch (Exception | TeamAlreadyExistsException err) {
                         err.printStackTrace();
                         player.sendMessage(MiniMessageUtil.deserialize("<red><bold>ERROR! An unexpected error has occurred! | %s", err.toString()));
                     }

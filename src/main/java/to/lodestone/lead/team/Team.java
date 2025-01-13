@@ -102,6 +102,16 @@ public class Team implements ITeam {
     }
 
     @Override
+    public void setColorName(boolean value) {
+
+    }
+
+    @Override
+    public boolean shouldColorName() {
+        return false;
+    }
+
+    @Override
     public void setCollidable(org.bukkit.scoreboard.Team.OptionStatus status) {
         this.collidable = status;
     }
