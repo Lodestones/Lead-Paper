@@ -2,20 +2,20 @@
 #                       General Configuration                         #
 #  DO NOT TOUCH VERSION! YOU MAY BREAK YOUR CONFIGURATION IF YOU DO!  #
 #######################################################################
-debug: false
+verbose: false
 update: true
-version: 7
+version: 8
 max_team_size: 5
 default: # What the default setting is for whenever someone creates a team.
   friendly_fire: true
   collidable: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
   name_tag_visibility: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
   is_public: true # Will team commands be public or private?
+  font: "default" # The font to use for display names.
+  color_names: false # If true, player names will be colored.
+
 max_teams: 1000 # The maximum amount of teams that can be created.
 automatic_updates: true # If false, you will need to manually update the player tab using /team update.
-color_names: false # If true, player names will be colored.
-font: "default" # The font to use for display names.
-set_temporary_group: true # If true, Lead will attempt to set the temporary group for TAB. Remember you need to configure TAB first!
 
 # Command Permission
 # Setting the permission to "null" will make the command public.

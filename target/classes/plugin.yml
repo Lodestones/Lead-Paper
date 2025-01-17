@@ -1,5 +1,5 @@
 name: Lead
-version: '1.2.14'
+version: '1.2.2'
 main: to.lodestone.lead.LeadPlugin
 api-version: '1.20'
 authors: [Apollo30]
@@ -10,3 +10,4 @@ depend:
   - Bookshelf
 softdepend:
   - TAB
+  - PlaceholderAPI

@@ -10,3 +10,4 @@ depend:
   - Bookshelf
 softdepend:
   - TAB
+  - PlaceholderAPI
