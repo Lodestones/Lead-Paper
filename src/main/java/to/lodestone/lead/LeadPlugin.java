@@ -45,7 +45,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.2";
+    public static final String VERSION = "v1.2.21";
     private static final int CONFIG_VERSION = 7;
 
     private static final String TEAMLESS_ID = "TEAMLESS";
@@ -218,7 +218,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                                 fontToUse,
                                 team.getColor(),
                                 team.getName(),
-                                team.getName().isEmpty() ? "" : String.format("<%s> ", config().getBoolean("default.color_names") ? team.getColor() : "reset")
+                                team.getName().isEmpty() ? "" : String.format("<%s> ", config().getBoolean("default.color_names", false) ? team.getColor() : "white")
                         );
 
                         Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, formattedPrefix);

@@ -234,7 +234,7 @@ public class TeamCommand extends Command {
                             team.addInvitation(target.getUniqueId());
                             player.sendMessage(MiniMessageUtil.deserialize(String.format("<yellow>%s</yellow> <gray>has been invited to your team!", target.getName())));
 
-                            target.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><yellow>INVITE PENDING</yellow>\n  <reset>You've been invited to join <yellow>%s's</yellow> team!\n  You can type \"/team join %s\" to join their team!\n  <reset><yellow><bold>CLICK TO JOIN TEAM", target.getName(), player.getName()))
+                            target.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><yellow>INVITE PENDING</yellow>\n  <reset>You've been invited to join <yellow>%s's</yellow> team!\n  You can type \"/team join %s\" to join their team!\n  <reset><yellow><bold>CLICK TO JOIN TEAM", player.getName(), player.getName()))
                                     .hoverEvent(HoverEvent.showText(Component.text(String.format("Click to join %s's team!", player.getName()))))
                                     .clickEvent(ClickEvent.runCommand(String.format("/team join %s", player.getName()))));
 

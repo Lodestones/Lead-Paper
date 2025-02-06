@@ -188,6 +188,9 @@ public class Team implements ITeam {
 
     @Override
     public void addInvitation(UUID uniqueId) {
+        if (this.invitations.stream().anyMatch(uuid -> uuid.toString().equalsIgnoreCase(uniqueId.toString())))
+            return;
+
         this.invitations.add(uniqueId);
     }
 
@@ -198,6 +201,9 @@ public class Team implements ITeam {
 
     @Override
     public void addMember(ITeamMember member) {
+        if (this.members.stream().anyMatch(m -> m.getUniqueId().toString().equalsIgnoreCase(member.getUniqueId().toString())))
+            return;
+
         this.members.add(member);
         plugin.getTeamByPlayer().put(member.getUniqueId().toString(), this.getUniqueId());
         plugin.getPlayersByTeam().put(this.getUniqueId().toString(), new ArrayList<>(members.stream().map(ITeamMember::getUniqueId).toList()));
@@ -205,6 +211,9 @@ public class Team implements ITeam {
 
     @Override
     public void addMember(Player player) {
+        if (this.members.stream().anyMatch(member -> member.getUniqueId().toString().equalsIgnoreCase(player.getUniqueId().toString())))
+            return;
+
         this.members.add(new TeamMember(player));
         plugin.getTeamByPlayer().put(player.getUniqueId().toString(), this.getUniqueId());
         plugin.getPlayersByTeam().put(this.getUniqueId().toString(), new ArrayList<>(members.stream().map(ITeamMember::getUniqueId).toList()));
