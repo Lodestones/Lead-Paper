@@ -4,7 +4,11 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import to.lodestone.bookshelfapi.api.util.EnumUtil;
+import to.lodestone.leadapi.api.GeneratorType;
 import to.lodestone.leadapi.api.ITeam;
+
+import java.util.Objects;
 
 public class PlaceholderManager extends PlaceholderExpansion {
 
@@ -32,16 +36,15 @@ public class PlaceholderManager extends PlaceholderExpansion {
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         if (player == null) return null;
 
+        GeneratorType generatorType = EnumUtil.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NUMBER);
         ITeam team = plugin.getTeam(player.getUniqueId());
-        if (team == null) return null;
 
         return switch (params) {
-            case "team_id" -> team.getId();
-            case "team_name" -> team.getName();
-            case "team_size" -> String.valueOf(team.getMembers().size());
-            case "team_color" -> team.getColor();
+            case "team_id" -> team == null ? generatorType == GeneratorType.NUMBER ? String.valueOf(Integer.MAX_VALUE) : null : team.getId();
+            case "team_name" -> team == null ? null : team.getName();
+            case "team_size" -> team == null ? null : String.valueOf(team.getMembers().size());
+            case "team_color" -> team == null ? null : team.getColor();
             default -> null;
         };
-
     }
 }

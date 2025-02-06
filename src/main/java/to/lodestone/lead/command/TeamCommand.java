@@ -276,7 +276,7 @@ public class TeamCommand extends Command {
 
                         PreTeamCreateEvent teamCreateEvent = new PreTeamCreateEvent(player);
                         if (teamCreateEvent.callEvent()) {
-                            team = plugin.createTeamByType(player, EnumUtil.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NAME));
+                            team = plugin.createTeamByType(player, EnumUtil.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NUMBER));
                             team.addMember(new TeamMember(player));
 
                             player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>TEAM CREATED\n  <reset><gray>You've created Team %s\n ", team.getId())));
