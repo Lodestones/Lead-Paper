@@ -23,18 +23,6 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void on(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            if (player.isOp()) {
-                player.sendMessage(Component.empty());
-                player.sendMessage(MiniMessageUtil.deserialize("  <yellow><bold>Lead - The Ultimate Teams Plugin"));
-                player.sendMessage(MiniMessageUtil.deserialize(String.format("  <white>Running <yellow>%s", LeadPlugin.VERSION)));
-                player.sendMessage(MiniMessageUtil.deserialize("  <white>Join the Lodestone <hover:show_text:'<#5C77FB>Join the Discord'><click:open_url:https://discord.gg/lodestone><underlined><#5C77FB>discord!"));
-                player.sendMessage(Component.empty());
-            }
-        }, 10L);
-
         Task.runAsync(plugin, plugin::update);
     }
 

@@ -23,6 +23,7 @@ import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class TeamListMenu extends Menu {
@@ -38,8 +39,15 @@ public class TeamListMenu extends Menu {
 
     @Override
     protected @NotNull TopMenuBuilder getTopMenuBuilder(TopMenuBuilder topMenuBuilder) {
-        List<ITeam> teams = plugin.getTeams();
-//        teams.sort(Comparator.comparingInt(ITeam::getNameAsNumber));
+        List<ITeam> teams = new ArrayList<>(plugin.getTeams());
+        teams.sort((a, b) -> {
+            // check if the team id is a number, if so sort it by number, otherwise return it as the highest sorting to be on top
+            try {
+                return Integer.compare(Integer.parseInt(a.getId()), Integer.parseInt(b.getId()));
+            } catch (NumberFormatException e) {
+                return 1;
+            }
+        });
 
         ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         pane.editMeta(meta -> meta.displayName(Component.empty()));

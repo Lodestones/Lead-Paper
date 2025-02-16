@@ -368,7 +368,7 @@ public class TeamCommand extends Command {
                             if (plugin.config().getBoolean("automatic_updates", true))
                                 plugin.update();
                             CommandAPI.updateRequirements(player);
-                            new PostTeamJoinEvent(team, player).callEvent();
+                            new PostTeamJoinEvent(targetTeam, player).callEvent();
                         }
                     }
                 })
