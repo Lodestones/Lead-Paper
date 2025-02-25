@@ -20,8 +20,8 @@ import to.lodestone.bookshelfapi.api.util.StringUtil;
 import to.lodestone.lead.LeadPlugin;
 import to.lodestone.lead.menu.TeamEditorMenu;
 import to.lodestone.lead.menu.TeamListMenu;
-import to.lodestone.leadapi.api.GeneratorType;
 import to.lodestone.lead.team.TeamMember;
+import to.lodestone.leadapi.api.GeneratorType;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 import to.lodestone.leadapi.api.event.*;
@@ -42,7 +42,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("kick")
                 .permission(plugin.config().getString("commands.kick", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                        return false;
 
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
@@ -75,7 +76,7 @@ public class TeamCommand extends Command {
                             return;
                         }
 
-                        PreTeamKickEvent kickEvent = new PreTeamKickEvent(team, target);
+                        TeamKickEvent kickEvent = new TeamKickEvent(team, target);
                         if (kickEvent.callEvent()) {
                             for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                 Player p = plugin.getServer().getPlayer(playerUniqueId);
@@ -88,8 +89,6 @@ public class TeamCommand extends Command {
                                 plugin.update();
 
                             CommandAPI.updateRequirements(player);
-                            new PostTeamKickEvent(team, target).callEvent();
-                            new PostTeamLeaveEvent(target, team).callEvent();
                         }
                     }
                 })
@@ -97,7 +96,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("leave")
                 .permission(plugin.config().getString("commands.leave", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                        return false;
 
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
@@ -118,7 +118,7 @@ public class TeamCommand extends Command {
                         return;
                     }
 
-                    PreTeamLeaveEvent teamLeaveEvent = new PreTeamLeaveEvent(player, team);
+                    TeamLeaveEvent teamLeaveEvent = new TeamLeaveEvent(player, team);
                     if (teamLeaveEvent.callEvent()) {
                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                             Player p = plugin.getServer().getPlayer(playerUniqueId);
@@ -129,16 +129,16 @@ public class TeamCommand extends Command {
                         team.removeMember(player.getUniqueId());
                         if (plugin.config().getBoolean("automatic_updates", true))
                             plugin.update();
-                        CommandAPI.updateRequirements(player);
 
-                        new PostTeamLeaveEvent(player, team).callEvent();
+                        CommandAPI.updateRequirements(player);
                     }
                 })
         );
         subCommand(new Command("disband")
                 .permission(plugin.config().getString("commands.disband", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                        return false;
 
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
@@ -159,7 +159,7 @@ public class TeamCommand extends Command {
                         return;
                     }
 
-                    PreTeamDisbandEvent disbandEvent = new PreTeamDisbandEvent(team);
+                    TeamDisbandEvent disbandEvent = new TeamDisbandEvent(team);
                     if (disbandEvent.callEvent()) {
                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                             Player p = plugin.getServer().getPlayer(playerUniqueId);
@@ -174,7 +174,6 @@ public class TeamCommand extends Command {
                             plugin.update();
 
                         CommandAPI.updateRequirements(player);
-                        new PostTeamDisbandEvent(team).callEvent();
                     }
                 })
         );
@@ -196,7 +195,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("invite")
                 .permission(plugin.config().getString("commands.invite", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                        return false;
 
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
@@ -229,7 +229,7 @@ public class TeamCommand extends Command {
                             return;
                         }
 
-                        PreTeamInviteEvent teamInvite = new PreTeamInviteEvent(team, target);
+                        TeamInviteEvent teamInvite = new TeamInviteEvent(team, target);
                         if (teamInvite.callEvent()) {
                             team.addInvitation(target.getUniqueId());
                             player.sendMessage(MiniMessageUtil.deserialize(String.format("<yellow>%s</yellow> <gray>has been invited to your team!", target.getName())));
@@ -237,8 +237,6 @@ public class TeamCommand extends Command {
                             target.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><yellow>INVITE PENDING</yellow>\n  <reset>You've been invited to join <yellow>%s's</yellow> team!\n  You can type \"/team join %s\" to join their team!\n  <reset><yellow><bold>CLICK TO JOIN TEAM", player.getName(), player.getName()))
                                     .hoverEvent(HoverEvent.showText(Component.text(String.format("Click to join %s's team!", player.getName()))))
                                     .clickEvent(ClickEvent.runCommand(String.format("/team join %s", player.getName()))));
-
-                            new PostTeamInviteEvent(team, target).callEvent();
                         }
                     }
                 })
@@ -246,7 +244,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("create")
                 .permission(plugin.config().getString("commands.create", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                        return false;
 
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
@@ -274,8 +273,8 @@ public class TeamCommand extends Command {
                             return;
                         }
 
-                        PreTeamCreateEvent teamCreateEvent = new PreTeamCreateEvent(player);
-                        if (teamCreateEvent.callEvent()) {
+                        TeamCreateByPlayerEvent teamCreateByPlayerEvent = new TeamCreateByPlayerEvent(team, player);
+                        if (teamCreateByPlayerEvent.callEvent()) {
                             team = plugin.createTeamByType(player, EnumUtil.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NUMBER));
                             team.addMember(new TeamMember(player));
 
@@ -284,7 +283,6 @@ public class TeamCommand extends Command {
                                 plugin.update();
 
                             CommandAPI.updateRequirements(player);
-                            new PostTeamCreateEvent(player, team).callEvent();
                         }
                     } catch (Exception | TeamAlreadyExistsException err) {
                         err.printStackTrace();
@@ -315,7 +313,8 @@ public class TeamCommand extends Command {
         subCommand(new Command("join")
                 .permission(plugin.config().getString("commands.join", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                        return false;
 
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
@@ -354,7 +353,7 @@ public class TeamCommand extends Command {
                             return;
                         }
 
-                        PreTeamJoinEvent joinEvent = new PreTeamJoinEvent(team, player);
+                        TeamJoinEvent joinEvent = new TeamJoinEvent(team, player);
                         if (joinEvent.callEvent()) {
                             targetTeam.removeInvitation(player.getUniqueId());
                             targetTeam.addMember(new TeamMember(player));
@@ -367,8 +366,8 @@ public class TeamCommand extends Command {
 
                             if (plugin.config().getBoolean("automatic_updates", true))
                                 plugin.update();
+
                             CommandAPI.updateRequirements(player);
-                            new PostTeamJoinEvent(targetTeam, player).callEvent();
                         }
                     }
                 })
@@ -389,7 +388,7 @@ public class TeamCommand extends Command {
                         return;
                     }
 
-                    PreTeamTeleportEvent teamTeleportEvent = new PreTeamTeleportEvent(team, target);
+                    TeamTeleportEvent teamTeleportEvent = new TeamTeleportEvent(team, target);
                     if (teamTeleportEvent.callEvent()) {
                         int c = 0;
                         for (ITeamMember member : team.getMembers()) {
@@ -404,15 +403,14 @@ public class TeamCommand extends Command {
                             sender.sendMessage(MiniMessageUtil.deserialize("Teleported <%s>Team %s <reset>to %s", team.getColor(), team.getId(), target.getName()));
                         else
                             sender.sendMessage(MiniMessageUtil.deserialize("<red>No members of that team are online!"));
-
-                        new PostTeamTeleportEvent(team, target).callEvent();
                     }
                 })
         );
         subCommand(new Command("chat")
                 .permission(plugin.config().getString("commands.chat", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage")) return false;
+                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                        return false;
 
                     if (sender instanceof Player player) {
                         ITeam team = plugin.getTeam(player.getUniqueId());
@@ -459,7 +457,7 @@ public class TeamCommand extends Command {
                                 return;
                             }
 
-                            PreTeamMergeEvent mergeEvent = new PreTeamMergeEvent(teamOne, teamTwo);
+                            TeamMergeEvent mergeEvent = new TeamMergeEvent(teamOne, teamTwo);
                             if (mergeEvent.callEvent()) {
                                 List<ITeamMember> originalMembers = new ArrayList<>(teamOne.getMembers());
 
@@ -482,8 +480,6 @@ public class TeamCommand extends Command {
 
                                 if (sender instanceof Player player)
                                     CommandAPI.updateRequirements(player);
-
-                                new PostTeamMergeEvent(teamOne, teamTwo).callEvent();
                             }
                         }
                     }
@@ -524,8 +520,8 @@ public class TeamCommand extends Command {
                                     }
 
                                     String oldTeamColor = team.getColor();
-                                    PreTeamChangeIdEvent teamChangeNameEvent = new PreTeamChangeIdEvent(team, oldTeamColor, newTeamColor);
-                                    if (teamChangeNameEvent.callEvent()) {
+                                    TeamChangeColorEvent teamChangeColorEvent = new TeamChangeColorEvent(team, oldTeamColor, newTeamColor);
+                                    if (teamChangeColorEvent.callEvent()) {
                                         if (!newTeamColor.matches("^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
                                             sender.sendMessage(MiniMessageUtil.deserialize("That color isn't a valid hex color!").color(NamedTextColor.RED));
                                             return;
@@ -546,8 +542,6 @@ public class TeamCommand extends Command {
 
                                         if (sender instanceof Player player)
                                             CommandAPI.updateRequirements(player);
-
-                                        new PostTeamChangeIdEvent(team, oldTeamColor, newTeamColor).callEvent();
                                     }
                                 }
                             }
@@ -566,7 +560,7 @@ public class TeamCommand extends Command {
                                     }
 
                                     String oldTeamName = team.getId();
-                                    PreTeamChangeNameEvent teamChangeNameEvent = new PreTeamChangeNameEvent(team, oldTeamName, newTeamName);
+                                    TeamChangeNameEvent teamChangeNameEvent = new TeamChangeNameEvent(team, oldTeamName, newTeamName);
                                     if (teamChangeNameEvent.callEvent()) {
                                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                             Player p = plugin.getServer().getPlayer(playerUniqueId);
@@ -580,8 +574,6 @@ public class TeamCommand extends Command {
 
                                         if (sender instanceof Player player)
                                             CommandAPI.updateRequirements(player);
-
-                                        new PostTeamChangeIdEvent(team, oldTeamName, newTeamName).callEvent();
                                     }
                                 }
                             }
@@ -600,7 +592,7 @@ public class TeamCommand extends Command {
                                     }
 
                                     String oldTeamId = team.getId();
-                                    PreTeamChangeIdEvent teamChangeIdEvent = new PreTeamChangeIdEvent(team, oldTeamId, newTeamId);
+                                    TeamChangeIdEvent teamChangeIdEvent = new TeamChangeIdEvent(team, oldTeamId, newTeamId);
                                     if (teamChangeIdEvent.callEvent()) {
                                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                             Player p = plugin.getServer().getPlayer(playerUniqueId);
@@ -616,8 +608,6 @@ public class TeamCommand extends Command {
 
                                         if (sender instanceof Player player)
                                             CommandAPI.updateRequirements(player);
-
-                                        new PostTeamChangeIdEvent(team, oldTeamId, newTeamId).callEvent();
                                     }
                                 }
                             }
@@ -628,7 +618,7 @@ public class TeamCommand extends Command {
                         .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
                         .executes((sender, args) -> {
                             if (plugin.isTABPresent()) {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>That feature is not available with TAB!"));
+                                sender.sendMessage(MiniMessageUtil.deserialize("<red>This feature is not available with TAB!"));
                                 return;
                             }
 
@@ -675,7 +665,7 @@ public class TeamCommand extends Command {
                         .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
                         .executes((sender, args) -> {
                             if (plugin.isTABPresent()) {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>That feature is not available with TAB!"));
+                                sender.sendMessage(MiniMessageUtil.deserialize("<red>This feature is not available with TAB!"));
                                 return;
                             }
 
@@ -720,9 +710,8 @@ public class TeamCommand extends Command {
                                 return;
                             }
 
-                            PreTeamJoinEvent joinEvent = new PreTeamJoinEvent(team, target);
+                            TeamJoinEvent joinEvent = new TeamJoinEvent(team, target);
                             if (joinEvent.callEvent()) {
-
                                 ITeam previousTeam = plugin.getTeam(target.getUniqueId());
                                 if (previousTeam != null) previousTeam.removeMember(target.getUniqueId());
 
@@ -739,8 +728,6 @@ public class TeamCommand extends Command {
 
                                 if (sender instanceof Player player)
                                     CommandAPI.updateRequirements(player);
-
-                                new PostTeamJoinEvent(team, target).callEvent();
                             }
                         }
                     }
@@ -757,7 +744,7 @@ public class TeamCommand extends Command {
                             return;
                         }
 
-                        PreTeamLeaveEvent leaveEvent = new PreTeamLeaveEvent(target, team);
+                        TeamLeaveEvent leaveEvent = new TeamLeaveEvent(target, team);
                         if (leaveEvent.callEvent()) {
                             for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                 Player p = plugin.getServer().getPlayer(playerUniqueId);
@@ -773,8 +760,6 @@ public class TeamCommand extends Command {
 
                             if (sender instanceof Player player)
                                 CommandAPI.updateRequirements(player);
-
-                            new PostTeamLeaveEvent(target, team).callEvent();
                         }
                     }
                 })
@@ -790,25 +775,20 @@ public class TeamCommand extends Command {
                             return;
                         }
 
-                        PreTeamDisbandEvent teamDisbandEvent = new PreTeamDisbandEvent(team);
-                        if (teamDisbandEvent.callEvent()) {
-                            for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
-                                Player p = plugin.getServer().getPlayer(playerUniqueId);
-                                if (p != null)
-                                    p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>TEAM DELETED\n  <reset><yellow>%s</yellow> <gray>has deleted your team!\n ", sender.getName())));
-                            }
-
-                            plugin.deleteTeam(team);
-                            if (plugin.config().getBoolean("automatic_updates", true))
-                                plugin.update();
-
-                            if (sender instanceof Player player)
-                                CommandAPI.updateRequirements(player);
-
-                            sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully deleted <%s>Team %s<white>!", team.getColor(), team.getId())));
-
-                            new PostTeamDisbandEvent(team).callEvent();
+                        for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
+                            Player p = plugin.getServer().getPlayer(playerUniqueId);
+                            if (p != null)
+                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>TEAM DELETED\n  <reset><yellow>%s</yellow> <gray>has deleted your team!\n ", sender.getName())));
                         }
+
+                        plugin.deleteTeam(team);
+                        if (plugin.config().getBoolean("automatic_updates", true))
+                            plugin.update();
+
+                        if (sender instanceof Player player)
+                            CommandAPI.updateRequirements(player);
+
+                        sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully deleted <%s>Team %s<white>!", team.getColor(), team.getId())));
                     }
                 })
         );

@@ -6,7 +6,7 @@
 
     <groupId>to.lodestone</groupId>
     <artifactId>Lead-Paper</artifactId>
-    <version>1.2.22</version>
+    <version>1.2.3</version>
     <packaging>jar</packaging>
 
     <name>Lead-Paper</name>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>to.lodestone</groupId>
             <artifactId>Lead-API</artifactId>
-            <version>1.0.81</version>
+            <version>1.0.9</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

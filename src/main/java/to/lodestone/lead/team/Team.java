@@ -8,6 +8,7 @@ import to.lodestone.bookshelfapi.api.util.EnumUtil;
 import to.lodestone.lead.LeadPlugin;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
+import to.lodestone.leadapi.api.event.TeamRemoveEvent;
 
 import java.util.*;
 
@@ -174,6 +175,8 @@ public class Team implements ITeam {
     public void removeMember(UUID uniqueId) {
         this.members.removeIf(member -> member.getUniqueId().toString().equalsIgnoreCase(uniqueId.toString()));
         this.plugin.getTeamByPlayer().remove(uniqueId.toString());
+
+        new TeamRemoveEvent(this, uniqueId).callEvent();
     }
 
     @Override

@@ -4,7 +4,7 @@
 #######################################################################
 verbose: false
 update: true
-version: 8
+version: 9
 max_team_size: 5
 default: # What the default setting is for whenever someone creates a team.
   friendly_fire: true
@@ -15,6 +15,7 @@ default: # What the default setting is for whenever someone creates a team.
   color_names: false # If true, player names will be colored.
 
 max_teams: 1000 # The maximum amount of teams that can be created.
+should_increment: false # If true, and the generator type is NUMBER, the number will increment by 1 each time a team is created.
 automatic_updates: true # If false, you will need to manually update the player tab using /team update.
 
 # Command Permission

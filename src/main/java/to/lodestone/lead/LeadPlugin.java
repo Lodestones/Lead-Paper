@@ -34,6 +34,7 @@ import to.lodestone.leadapi.LeadAPI;
 import to.lodestone.leadapi.api.GeneratorType;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
+import to.lodestone.leadapi.api.event.*;
 import to.lodestone.leadapi.api.exception.MaxTeamLimitException;
 import to.lodestone.leadapi.api.exception.TeamAlreadyExistsException;
 import to.lodestone.leadapi.api.exception.TeamNotFoundException;
@@ -45,8 +46,8 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.22";
-    private static final int CONFIG_VERSION = 8;
+    public static final String VERSION = "v1.2.3";
+    private static final int CONFIG_VERSION = 9;
 
     private static final String TEAMLESS_ID = "TEAMLESS";
 
@@ -187,7 +188,9 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         if (numbers.size() == 0)
             throw new IllegalStateException("No available team number!");
 
-        Collections.shuffle(numbers, SEED);
+        if (!config().getBoolean("should_increment", false))
+            Collections.shuffle(numbers, SEED);
+
         return numbers.get(0);
     }
 
@@ -328,6 +331,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         ITeam iTeam = createTeamByColor(id, player.getUniqueId(), entry.getKey());
         iTeam.setName(name);
         iTeam.addMember(player);
+        new TeamCreateEvent(iTeam, player).callEvent();
         return iTeam;
     }
 
@@ -358,6 +362,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
         iTeam.setName(name);
         iTeam.addMember(player);
+        new TeamCreateEvent(iTeam, player).callEvent();
         return iTeam;
     }
 
@@ -387,6 +392,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         };
 
         iTeam.addMember(player);
+        new TeamCreateEvent(iTeam, player).callEvent();
         return iTeam;
     }
 
@@ -403,6 +409,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         playersByTeam.put(team.getUniqueId().toString(), new ArrayList<>());
         Player player = getServer().getPlayer(leader);
         if (player != null) team.addMember(player);
+        new TeamCreateEvent(team, player).callEvent();
         return team;
     }
 
@@ -414,6 +421,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         teams.put(team.getUniqueId(), team);
         teamsById.put(team.getId(), team);
         playersByTeam.put(team.getUniqueId().toString(), new ArrayList<>());
+        new TeamCreateEvent(team, null).callEvent();
         return team;
     }
 
@@ -427,6 +435,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         playersByTeam.put(team.getUniqueId().toString(), new ArrayList<>());
         Player player = getServer().getPlayer(leader);
         if (player != null) team.addMember(player);
+        new TeamCreateEvent(team, player).callEvent();
         return team;
     }
 
@@ -492,6 +501,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         teamsById.remove(team.getId());
         playersByTeam.remove(team.getUniqueId().toString());
         team.getMembers().forEach(member -> teamByPlayer.remove(member.getUniqueId().toString()));
+        new TeamDeleteEvent(team).callEvent();
         return team;
     }
 
@@ -502,6 +512,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         players.remove(player);
         playersByTeam.put(team.getUniqueId().toString(), players);
         teamByPlayer.remove(player.toString());
+        new TeamRemoveEvent(team, UUID.fromString(player.toString())).callEvent();
     }
 
     @Override
@@ -515,6 +526,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         teamsById.remove(team.getId());
         playersByTeam.remove(team.getUniqueId().toString());
         team.getMembers().forEach(member -> teamByPlayer.remove(member.getUniqueId().toString()));
+        new TeamDeleteEvent(team).callEvent();
         return team;
     }
 
