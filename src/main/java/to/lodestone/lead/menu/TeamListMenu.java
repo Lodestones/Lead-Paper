@@ -23,11 +23,12 @@ import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class TeamListMenu extends Menu {
 
-    private int page;
+    private final int page;
     private final LeadPlugin plugin;
 
     public TeamListMenu(LeadPlugin plugin, Player player, int page) {
@@ -38,8 +39,15 @@ public class TeamListMenu extends Menu {
 
     @Override
     protected @NotNull TopMenuBuilder getTopMenuBuilder(TopMenuBuilder topMenuBuilder) {
-        List<ITeam> teams = plugin.getTeams();
-//        teams.sort(Comparator.comparingInt(ITeam::getNameAsNumber));
+        List<ITeam> teams = new ArrayList<>(plugin.getTeams());
+        teams.sort((a, b) -> {
+            // check if the team id is a number, if so sort it by number, otherwise return it as the highest sorting to be on top
+            try {
+                return Integer.compare(Integer.parseInt(a.getId()), Integer.parseInt(b.getId()));
+            } catch (NumberFormatException e) {
+                return 1;
+            }
+        });
 
         ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         pane.editMeta(meta -> meta.displayName(Component.empty()));
@@ -66,9 +74,8 @@ public class TeamListMenu extends Menu {
                         event -> {
                             event.setCancelled(true);
                             player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                         })
-
         );
 
         int[] _c = {1, 1};
@@ -76,14 +83,14 @@ public class TeamListMenu extends Menu {
             if (_c[0] > 7) {
                 _c[0] = 1;
                 _c[1]++;
-                if (_c[1] == 4) break;
+                if (_c[1] == 5) break;
             }
 
             ItemStack listHead = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) listHead.getItemMeta();
-            meta.displayName(MiniMessageUtil.deserialize(String.format("<reset><%s>Team %s", team.getColor(), team.getId())).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(MiniMessageUtil.deserialize(String.format("<reset><font:%s><%s>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName())).decoration(TextDecoration.ITALIC, false));
             List<Component> lores = new ArrayList<>();
-            List<ITeamMember> members = team.getMembers();
+            List<ITeamMember> members = new ArrayList<>(team.getMembers());
             members.sort((a, b) -> {
                 if (a.getUniqueId().equals(team.getLeaderUniqueId())) return 1;
                 else if (b.getUniqueId().equals(team.getLeaderUniqueId())) return -1;
@@ -93,7 +100,7 @@ public class TeamListMenu extends Menu {
             for (ITeamMember teamMember : members)
                 lores.add(MiniMessageUtil.deserialize(String.format("<reset><white>- <yellow>%s", teamMember.getName())).decoration(TextDecoration.ITALIC, false));
             meta.lore(lores);
-            if (team.getLeaderUniqueId() != null) {
+            if (team.getLeaderUniqueId() != null && team.containsMember(team.getLeaderUniqueId())) {
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(team.getLeaderUniqueId());
                 if (offlinePlayer.getName() != null)
                     meta.setOwningPlayer(offlinePlayer);
@@ -101,9 +108,7 @@ public class TeamListMenu extends Menu {
 
             listHead.setItemMeta(meta);
 
-            topMenuBuilder.editRow(_c[1], rowBuilder -> rowBuilder.setSlot(_c[0], listHead,
-                    event -> event.setCancelled(true))
-            );
+            topMenuBuilder.editRow(_c[1], rowBuilder -> rowBuilder.setSlot(_c[0], listHead, event -> event.setCancelled(true)));
 
             _c[0]++;
         }
@@ -115,8 +120,8 @@ public class TeamListMenu extends Menu {
                                 goBack,
                                 event -> {
                                     event.setCancelled(true);
-                                    plugin.bookshelf().getMenuManager().registerAndOpen(player.getUniqueId(), new TeamListMenu(plugin, player, --page));
-                                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                                    new TeamListMenu(plugin, player, page - 1).open();
+                                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                                 }
                         );
                     }
@@ -126,8 +131,8 @@ public class TeamListMenu extends Menu {
                                 goForward,
                                 event -> {
                                     event.setCancelled(true);
-                                    plugin.bookshelf().getMenuManager().registerAndOpen(player.getUniqueId(), new TeamListMenu(plugin, player, ++page));
-                                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                                    new TeamListMenu(plugin, player, page + 1).open();
+                                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                                 }
                         );
                     }

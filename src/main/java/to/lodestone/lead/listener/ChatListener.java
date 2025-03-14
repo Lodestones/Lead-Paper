@@ -29,21 +29,20 @@ public class ChatListener implements Listener {
             assert teamMember != null;
 
             event.messageColor("#FFFFFF");
+            event.playerColor("#FFFFFF");
 
             if (teamMember.isInTeamChat()) {
                 event.setViewers(team.getMembers().stream().map(ITeamMember::getUniqueId).toList());
-                event.prefix(MiniMessageUtil.deserialize("<green><bold>TEAM »<reset><%s> %s", team.getColor(), team.getName()));
+                event.prefix(MiniMessageUtil.deserialize("<green><bold>TEAM » <reset><font:%s><%s>%s</font><%s>", plugin.config().getString("default.font", "default"), team.getColor(), team.getName(), team.getColor()));
                 event.playerColor(team.getColor());
             } else {
-                Component newPrefix = MiniMessageUtil.deserialize("<%s>%s", team.getColor(), team.getName());
-                event.playerColor(team.getColor());
+                Component newPrefix = MiniMessageUtil.deserialize("<font:%s><%s>%s</font>%s", plugin.config().getString("default.font", "default"), team.getColor(), team.getName(), String.format("<%s>", plugin.config().getBoolean("default.color_names") ? team.getColor() : "reset"));
                 if (event.prefix() == null)
                     event.prefix(newPrefix);
                 else
                     event.prefix(event.prefix().append(Component.empty().decoration(TextDecoration.BOLD, false)).append(Component.text(MiniMessageUtil.serialize(event.prefix()).isEmpty() ? "" : " ").append(newPrefix)));
             }
 
-            event.setModified(true);
             return;
         }
 

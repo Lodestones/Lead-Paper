@@ -1,9 +1,13 @@
 to\lodestone\lead\LeadPlugin.class
-to\lodestone\lead\command\TeamCommand.class
-to\lodestone\lead\team\Team.class
+to\lodestone\lead\menu\TeamEditorMenu.class
 to\lodestone\lead\team\TeamMember.class
-to\lodestone\lead\listener\WorldListener.class
 to\lodestone\lead\menu\TeamListMenu.class
-to\lodestone\lead\listener\ChatListener.class
 to\lodestone\lead\command\TeamMessageCommand.class
 to\lodestone\lead\listener\PlayerListener.class
+to\lodestone\lead\command\TeamCommand.class
+to\lodestone\lead\LeadPlugin$1.class
+to\lodestone\lead\team\Team.class
+to\lodestone\lead\PlaceholderManager.class
+to\lodestone\lead\listener\WorldListener.class
+to\lodestone\lead\listener\ChatListener.class
+to\lodestone\lead\command\LeadCommand.class
