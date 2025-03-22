@@ -50,7 +50,6 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     public static final String VERSION = "v1.2.31";
     private static final int CONFIG_VERSION = 10;
-
     private static final String TEAMLESS_ID = "TEAMLESS";
 
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
@@ -256,6 +255,9 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
                     // Remove any teams that are no longer a part of the lead team list.
                     for (org.bukkit.scoreboard.Team bukkitTeam : scoreboard.getTeams().stream().filter(bukkitTeam -> !bukkitTeam.getName().equals(TEAMLESS_ID) && getTeam(bukkitTeam.getName()) == null).toList()) {
+                        if (Bukkit.getScoreboardManager().getMainScoreboard().getTeam(bukkitTeam.getName()) == null)
+                            continue;
+
                         if (config().getBoolean("verbose"))
                             Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing scoreboard team named %s.]", bukkitTeam.getName()), "lead.debug");
 
