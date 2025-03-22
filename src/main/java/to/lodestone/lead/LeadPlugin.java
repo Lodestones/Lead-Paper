@@ -34,7 +34,9 @@ import to.lodestone.leadapi.LeadAPI;
 import to.lodestone.leadapi.api.GeneratorType;
 import to.lodestone.leadapi.api.ITeam;
 import to.lodestone.leadapi.api.ITeamMember;
-import to.lodestone.leadapi.api.event.*;
+import to.lodestone.leadapi.api.event.TeamCreateEvent;
+import to.lodestone.leadapi.api.event.TeamDeleteEvent;
+import to.lodestone.leadapi.api.event.TeamRemoveEvent;
 import to.lodestone.leadapi.api.exception.MaxTeamLimitException;
 import to.lodestone.leadapi.api.exception.TeamAlreadyExistsException;
 import to.lodestone.leadapi.api.exception.TeamNotFoundException;
@@ -46,8 +48,8 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.3";
-    private static final int CONFIG_VERSION = 9;
+    public static final String VERSION = "v1.2.31";
+    private static final int CONFIG_VERSION = 10;
 
     private static final String TEAMLESS_ID = "TEAMLESS";
 
