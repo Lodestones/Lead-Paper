@@ -51,13 +51,11 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     public static final String VERSION = "v1.2.31";
     private static final int CONFIG_VERSION = 10;
     private static final String TEAMLESS_ID = "TEAMLESS";
-
+    public static Random SEED = new Random();
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
     private final HashMap<String, UUID> teamByPlayer = new HashMap<>();
     private final HashMap<String, List<UUID>> playersByTeam = new HashMap<>();
     private final HashMap<String, ITeam> teamsById = new HashMap<>();
-
-    public static Random SEED = new Random();
     private Configuration config;
     private Configuration team;
     private Configuration random;
@@ -229,7 +227,6 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, formattedPrefix);
                     }
                 } else {
-                    // Loop through the entire list.
                     Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 
                     // Create or get a team for players without a specific team
@@ -265,8 +262,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                     }
 
                     // Create any teams that haven't been created yet.
-                    for (ITeam team : getTeams().stream().filter(leadTeam -> scoreboard.getTeams().stream().noneMatch(bukkitTeam -> bukkitTeam.getName().equals(leadTeam.getId())))
-                            .toList()) {
+                    for (ITeam team : getTeams().stream().filter(leadTeam -> scoreboard.getTeams().stream().noneMatch(bukkitTeam -> bukkitTeam.getName().equals(leadTeam.getId()))).toList()) {
                         Objects.requireNonNull(team.getId());
                         if (config().getBoolean("verbose"))
                             Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating scoreboard team named %s.]", team.getId()), "lead.debug");
@@ -285,12 +281,15 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         bukkitTeam.setAllowFriendlyFire(team.isFriendlyFireAllowed());
 
                         // Remove any team members that are no longer a part of the lead team member list.
-                        for (String bukkitMember : bukkitTeam.getEntries()) {
+                        for (String bukkitMember : new HashSet<>(bukkitTeam.getEntries())) {
                             Objects.requireNonNull(bukkitMember);
                             if (team.getMembers().stream().noneMatch(leadMember -> leadMember.getName().equals(bukkitMember))) {
-                                if (config().getBoolean("verbose"))
-                                    Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from scoreboard team %s.]", bukkitMember, team.getId()), "lead.debug");
-                                bukkitTeam.removeEntry(bukkitMember);
+                                Player player = Bukkit.getPlayerExact(bukkitMember);
+                                if (player != null && player.isOnline()) {
+                                    if (config().getBoolean("verbose"))
+                                        Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from scoreboard team %s.]", bukkitMember, team.getId()), "lead.debug");
+                                    bukkitTeam.removeEntry(bukkitMember);
+                                }
                             }
                         }
 
@@ -312,9 +311,14 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         }
                     }
 
-                    for (Player plr : getServer().getOnlinePlayers()) {
-                        plr.setScoreboard(scoreboard);
-                    }
+                    // Set the scoreboard on the main thread to avoid client sync issues
+                    Bukkit.getScheduler().runTask(this, () -> {
+                        for (Player plr : getServer().getOnlinePlayers()) {
+                            if (plr != null && plr.isOnline()) {
+                                plr.setScoreboard(scoreboard);
+                            }
+                        }
+                    });
 
                     if (config().getBoolean("verbose"))
                         Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Updated all teams in %s ms.]", System.currentTimeMillis() - timeNow), "lead.debug");
