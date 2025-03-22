@@ -213,7 +213,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         }
 
                         // max 16 characters
-                        String fontToUse = config().getString("default.font", "default");
+                        String fontToUse = config().getString("font", "default");
 //                        Objects.requireNonNull(tabApiInstance.getSortingManager()).forceTeamName(onlinePlayer, team.getId().substring(0, Math.min(16, team.getId().length())));
 
                         String formattedPrefix = String.format(
@@ -221,7 +221,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                                 fontToUse,
                                 team.getColor(),
                                 team.getName(),
-                                team.getName().isEmpty() ? "" : String.format("<%s> ", config().getBoolean("default.color_names", false) ? team.getColor() : "white")
+                                team.getName().isEmpty() ? "" : String.format("<%s> ", config().getBoolean("color_names", false) ? team.getColor() : "white")
                         );
 
                         Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, formattedPrefix);

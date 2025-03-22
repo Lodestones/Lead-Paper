@@ -42,7 +42,7 @@ public class TeamCommand extends Command {
         subCommand(new Command("kick")
                 .permission(plugin.config().getString("commands.kick", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                    if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
 
                     if (sender instanceof Player player) {
@@ -96,7 +96,7 @@ public class TeamCommand extends Command {
         subCommand(new Command("leave")
                 .permission(plugin.config().getString("commands.leave", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                    if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
 
                     if (sender instanceof Player player) {
@@ -137,7 +137,7 @@ public class TeamCommand extends Command {
         subCommand(new Command("disband")
                 .permission(plugin.config().getString("commands.disband", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                    if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
 
                     if (sender instanceof Player player) {
@@ -195,7 +195,7 @@ public class TeamCommand extends Command {
         subCommand(new Command("invite")
                 .permission(plugin.config().getString("commands.invite", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                    if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
 
                     if (sender instanceof Player player) {
@@ -244,7 +244,7 @@ public class TeamCommand extends Command {
         subCommand(new Command("create")
                 .permission(plugin.config().getString("commands.create", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                    if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
 
                     if (sender instanceof Player player) {
@@ -313,7 +313,7 @@ public class TeamCommand extends Command {
         subCommand(new Command("join")
                 .permission(plugin.config().getString("commands.join", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                    if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
 
                     if (sender instanceof Player player) {
@@ -409,7 +409,7 @@ public class TeamCommand extends Command {
         subCommand(new Command("chat")
                 .permission(plugin.config().getString("commands.chat", null))
                 .withRequirement(sender -> {
-                    if (!plugin.config().getBoolean("default.is_public") && !sender.hasPermission("lodestone.lead.manage"))
+                    if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
 
                     if (sender instanceof Player player) {

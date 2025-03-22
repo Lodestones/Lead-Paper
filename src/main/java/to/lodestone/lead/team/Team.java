@@ -38,9 +38,9 @@ public class Team implements ITeam {
         this.leaderUniqueId = null;
         this.invitations = new ArrayList<>();
         this.members = new ArrayList<>();
-        this.isFriendlyFireAllowed = plugin.config().getBoolean("default.friendly_fire", true);
-        this.collidable = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("default.collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
-        this.nameTagVisibility = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("default.name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+        this.isFriendlyFireAllowed = plugin.config().getBoolean("friendly_fire", true);
+        this.collidable = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+        this.nameTagVisibility = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
     }
 
 
@@ -55,9 +55,9 @@ public class Team implements ITeam {
         this.leaderUniqueId = leaderUniqueId;
         this.invitations = new ArrayList<>();
         this.members = new ArrayList<>();
-        this.isFriendlyFireAllowed = plugin.config().getBoolean("default.friendly_fire", true);
-        this.collidable = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("default.collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
-        this.nameTagVisibility = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("default.name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+        this.isFriendlyFireAllowed = plugin.config().getBoolean("friendly_fire", true);
+        this.collidable = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+        this.nameTagVisibility = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, plugin.config().getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
     }
 
     // Constructor for config.
