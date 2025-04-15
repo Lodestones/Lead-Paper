@@ -36,7 +36,7 @@ public class ChatListener implements Listener {
                 event.prefix(MiniMessageUtil.persistStyle(MiniMessageUtil.deserialize("<green><bold>TEAM » "), MiniMessageUtil.deserialize("<reset><font:%s><%s>%s</font><%s>", plugin.config().getString("font", "default"), team.getColor(), team.getName(), team.getColor())));
                 event.playerColor(team.getColor());
             } else {
-                Component newPrefix = MiniMessageUtil.persistStyle(MiniMessageUtil.deserialize("<font:%s><%s>%s</font>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName(), String.format("<%s>", plugin.config().getBoolean("color_names") ? team.getColor() : "reset")));
+                Component newPrefix = MiniMessageUtil.persistStyle(MiniMessageUtil.deserialize("<font:%s><%s>%s</font>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName(), String.format("<%s>", plugin.config().getBoolean("color_names") ? team.getColor() : "reset"))).decoration(TextDecoration.BOLD, false);
                 if (event.prefix() == null)
                     event.prefix(newPrefix);
                 else
