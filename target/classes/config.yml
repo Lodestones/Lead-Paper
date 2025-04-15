@@ -1,25 +1,52 @@
-#######################################################################
-#                       General Configuration                         #
-#  DO NOT TOUCH VERSION! YOU MAY BREAK YOUR CONFIGURATION IF YOU DO!  #
-#######################################################################
+# Lead Config v1.2.3
+version: 10
+
+# If verbose is true, the plugin will output more information to the console/admins.
 verbose: false
-update: true
-version: 9
+
+# Maximum amount of players that can be added to a team.
 max_team_size: 5
-default: # What the default setting is for whenever someone creates a team.
-  friendly_fire: true
-  collidable: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
-  name_tag_visibility: ALWAYS # Options: ALWAYS, NEVER, FOR_OTHER_TEAMS, FOR_OWN_TEAM
-  is_public: true # Will team commands be public or private?
-  font: "default" # The font to use for display names.
-  color_names: false # If true, player names will be colored.
 
-max_teams: 1000 # The maximum amount of teams that can be created.
+# If true, the players are allowed to hit each other.
+friendly_fire: true
+
+# How collisions will work per team.
+# - ALWAYS: Players will always collide with each other.
+# - NEVER: Players will never collide with each other.
+# - FOR_OTHER_TEAMS: Players will collide with other teams, but not their own.
+# - FOR_OWN_TEAM: Players will collide with their own team, but not other teams.
+# Note: If TAB is installed, this value is redundant.
+collidable: ALWAYS
+
+# How nametag visibility will work per team.
+# - ALWAYS: Nametags will always be visible.
+# - NEVER: Nametags will never be visible.
+# - FOR_OTHER_TEAMS: Nametags will be visible for other teams, but not their own.
+# - FOR_OWN_TEAM: Nametags will be visible for their own team, but not other teams.
+# Note: If TAB is installed, this value is redundant.
+name_tag_visibility: ALWAYS
+
+# By default, should the default team commands be publicly accessible?
+# If false, the player will need the permission "lodestone.lead.manage" to use the commands.
+is_public: true
+
+# The font to use for display names.
+# If you are using custom fonts, you can specify the font name here.
+font: null
+
+# Should Lead color the player names?
+# If enabled, player chat names will be colored based on their team color.
+color_names: false
+
+# How many teams can be created?
+max_teams: 1000
+
+# If true, Lead will increment the next available team number. Otherwise, it will be random.
 should_increment: false # If true, and the generator type is NUMBER, the number will increment by 1 each time a team is created.
-automatic_updates: true # If false, you will need to manually update the player tab using /team update.
 
-# Command Permission
-# Setting the permission to "null" will make the command public.
+# Command Permissions
+# Setting the permission to "null" will make the command publicly accessible.
+# It is recommended to use LuckPerms or another permission plugin to manage permissions.
 commands:
   help: null
   list: null

@@ -33,10 +33,10 @@ public class ChatListener implements Listener {
 
             if (teamMember.isInTeamChat()) {
                 event.setViewers(team.getMembers().stream().map(ITeamMember::getUniqueId).toList());
-                event.prefix(MiniMessageUtil.deserialize("<green><bold>TEAM » <reset><font:%s><%s>%s</font><%s>", plugin.config().getString("font", "default"), team.getColor(), team.getName(), team.getColor()));
+                event.prefix(MiniMessageUtil.persistStyle(MiniMessageUtil.deserialize("<green><bold>TEAM » "), MiniMessageUtil.deserialize("<reset><font:%s><%s>%s</font><%s>", plugin.config().getString("font", "default"), team.getColor(), team.getName(), team.getColor())));
                 event.playerColor(team.getColor());
             } else {
-                Component newPrefix = MiniMessageUtil.deserialize("<font:%s><%s>%s</font>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName(), String.format("<%s>", plugin.config().getBoolean("color_names") ? team.getColor() : "reset"));
+                Component newPrefix = MiniMessageUtil.persistStyle(MiniMessageUtil.deserialize("<font:%s><%s>%s</font>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName(), String.format("<%s>", plugin.config().getBoolean("color_names") ? team.getColor() : "reset")));
                 if (event.prefix() == null)
                     event.prefix(newPrefix);
                 else

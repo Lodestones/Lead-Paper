@@ -48,7 +48,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.31";
+    public static final String VERSION = "v1.2.32";
     private static final int CONFIG_VERSION = 10;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
