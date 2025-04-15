@@ -353,7 +353,7 @@ public class TeamCommand extends Command {
                             return;
                         }
 
-                        TeamJoinEvent joinEvent = new TeamJoinEvent(team, player);
+                        TeamJoinEvent joinEvent = new TeamJoinEvent(targetTeam, player);
                         if (joinEvent.callEvent()) {
                             targetTeam.removeInvitation(player.getUniqueId());
                             targetTeam.addMember(new TeamMember(player));
