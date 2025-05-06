@@ -1,20 +1,19 @@
-package to.lodestone.lead.command;
+package gg.lode.lead.command;
 
+import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
+import gg.lode.bookshelfapi.api.event.PlayerChatEvent;
+import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.lead.LeadPlugin;
+import gg.lode.leadapi.api.ITeam;
+import gg.lode.leadapi.api.ITeamMember;
 import net.kyori.adventure.text.Component;
-import to.lodestone.bookshelfapi.api.command.Command;
-import to.lodestone.bookshelfapi.api.event.PlayerChatEvent;
-import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPlugin;
-import to.lodestone.leadapi.api.ITeam;
-import to.lodestone.leadapi.api.ITeamMember;
 
-public class TeamMessageCommand extends Command {
-
+public class TeamMessageCommand extends CommandAPICommand {
     public TeamMessageCommand(LeadPlugin plugin) {
         super("teammsg");
-        aliases("tm", "tc", "tmsg");
-        arguments(new GreedyStringArgument("message"));
+        withAliases("tm", "tc", "tmsg");
+        withArguments(new GreedyStringArgument("message"));
         executesPlayer((player, args) -> {
             ITeam team = plugin.getTeam(player.getUniqueId());
             if (team == null) {

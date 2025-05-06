@@ -1,17 +1,14 @@
-package to.lodestone.lead.listener;
+package gg.lode.lead.listener;
 
-import net.kyori.adventure.text.Component;
+import gg.lode.bookshelfapi.api.Task;
+import gg.lode.lead.LeadPlugin;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-import to.lodestone.bookshelfapi.api.Task;
-import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPlugin;
 
 public class PlayerListener implements Listener {
 

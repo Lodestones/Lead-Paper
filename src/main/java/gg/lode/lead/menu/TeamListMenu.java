@@ -1,5 +1,13 @@
-package to.lodestone.lead.menu;
+package gg.lode.lead.menu;
 
+import gg.lode.bookshelfapi.api.menu.Menu;
+import gg.lode.bookshelfapi.api.menu.build.MenuBuilder;
+import gg.lode.bookshelfapi.api.menu.build.TopMenuBuilder;
+import gg.lode.bookshelfapi.api.util.ArrayUtil;
+import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.lead.LeadPlugin;
+import gg.lode.leadapi.api.ITeam;
+import gg.lode.leadapi.api.ITeamMember;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -13,17 +21,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import to.lodestone.bookshelfapi.api.menu.Menu;
-import to.lodestone.bookshelfapi.api.menu.build.MenuBuilder;
-import to.lodestone.bookshelfapi.api.menu.build.TopMenuBuilder;
-import to.lodestone.bookshelfapi.api.util.ArrayUtil;
-import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPlugin;
-import to.lodestone.leadapi.api.ITeam;
-import to.lodestone.leadapi.api.ITeamMember;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class TeamListMenu extends Menu {

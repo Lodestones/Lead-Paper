@@ -1,14 +1,12 @@
-package to.lodestone.lead;
+package gg.lode.lead;
 
+import gg.lode.bookshelfapi.api.util.EnumUtil;
+import gg.lode.leadapi.api.GeneratorType;
+import gg.lode.leadapi.api.ITeam;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import to.lodestone.bookshelfapi.api.util.EnumUtil;
-import to.lodestone.leadapi.api.GeneratorType;
-import to.lodestone.leadapi.api.ITeam;
-
-import java.util.Objects;
 
 public class PlaceholderManager extends PlaceholderExpansion {
 

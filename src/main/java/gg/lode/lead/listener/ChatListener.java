@@ -1,16 +1,16 @@
-package to.lodestone.lead.listener;
+package gg.lode.lead.listener;
 
+import gg.lode.bookshelfapi.api.event.PlayerChatEvent;
+import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.lead.LeadPlugin;
+import gg.lode.leadapi.api.ITeam;
+import gg.lode.leadapi.api.ITeamMember;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import to.lodestone.bookshelfapi.api.event.PlayerChatEvent;
-import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPlugin;
-import to.lodestone.leadapi.api.ITeam;
-import to.lodestone.leadapi.api.ITeamMember;
 
 public class ChatListener implements Listener {
 

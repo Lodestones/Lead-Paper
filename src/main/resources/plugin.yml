@@ -1,13 +1,12 @@
 name: Lead
 version: '${project.version}'
-main: to.lodestone.lead.LeadPlugin
+main: gg.lode.lead.LeadPlugin
 api-version: '1.20'
 authors: [Apollo30]
 description: A lightweight plugin that creates visual teams showcased in Civilization or Battle Royale events. 
 website: https://lode.gg/
-depend:
-  - CommandAPI
-  - Bookshelf
 softdepend:
+  - Bookshelf
   - TAB
   - PlaceholderAPI
+folia-supported: true

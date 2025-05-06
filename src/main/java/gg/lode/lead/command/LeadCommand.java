@@ -1,18 +1,22 @@
-package to.lodestone.lead.command;
+package gg.lode.lead.command;
 
 import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.StringArgument;
-import to.lodestone.bookshelfapi.api.command.Command;
-import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPlugin;
+import dev.jorel.commandapi.executors.CommandExecutor;
+import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.lead.LeadPlugin;
 
-public class LeadCommand extends Command {
+public class LeadCommand extends CommandAPICommand {
     public LeadCommand(LeadPlugin plugin) {
         super("lead");
-        permission("lodestone.lead.commands.lead");
-        subCommand(new Command("reload")
-                .permission("lodestone.lead.commands.reload")
-                .optionalArguments(new StringArgument("-t"))
+        withPermission("lodestone.lead.commands.lead");
+        withSubcommand(new CommandAPICommand("version")
+                .executes((CommandExecutor) (sender, args) -> sender.sendMessage(MiniMessageUtil.deserialize("Running Lead %s", LeadPlugin.VERSION)))
+        );
+        withSubcommand(new CommandAPICommand("reload")
+                .withPermission("lodestone.lead.commands.reload")
+                .withOptionalArguments(new StringArgument("-t"))
                 .executesPlayer((player, args) -> {
                     boolean reloadTeams = args.get(0) instanceof String s && s.equalsIgnoreCase("-t");
                     long timeAt = System.currentTimeMillis();

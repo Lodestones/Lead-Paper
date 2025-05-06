@@ -1,9 +1,9 @@
-package to.lodestone.lead.listener;
+package gg.lode.lead.listener;
 
+import gg.lode.lead.LeadPlugin;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldSaveEvent;
-import to.lodestone.lead.LeadPlugin;
 
 public class WorldListener implements Listener {
 

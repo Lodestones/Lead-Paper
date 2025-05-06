@@ -1,14 +1,14 @@
-package to.lodestone.lead.team;
+package gg.lode.lead.team;
 
+import gg.lode.bookshelfapi.api.util.EnumUtil;
+import gg.lode.lead.LeadPlugin;
+import gg.lode.leadapi.api.ITeam;
+import gg.lode.leadapi.api.ITeamMember;
+import gg.lode.leadapi.api.event.TeamRemoveEvent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
-import to.lodestone.bookshelfapi.api.util.EnumUtil;
-import to.lodestone.lead.LeadPlugin;
-import to.lodestone.leadapi.api.ITeam;
-import to.lodestone.leadapi.api.ITeamMember;
-import to.lodestone.leadapi.api.event.TeamRemoveEvent;
 
 import java.util.*;
 

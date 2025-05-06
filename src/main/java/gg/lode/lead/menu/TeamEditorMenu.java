@@ -1,7 +1,15 @@
-package to.lodestone.lead.menu;
+package gg.lode.lead.menu;
 
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
+import gg.lode.bookshelfapi.api.Task;
+import gg.lode.bookshelfapi.api.item.ItemBuilder;
+import gg.lode.bookshelfapi.api.menu.Menu;
+import gg.lode.bookshelfapi.api.menu.build.MenuBuilder;
+import gg.lode.bookshelfapi.api.menu.build.TopMenuBuilder;
+import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.lead.LeadPlugin;
+import gg.lode.leadapi.api.ITeam;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -13,14 +21,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import to.lodestone.bookshelfapi.api.Task;
-import to.lodestone.bookshelfapi.api.item.ItemBuilder;
-import to.lodestone.bookshelfapi.api.menu.Menu;
-import to.lodestone.bookshelfapi.api.menu.build.MenuBuilder;
-import to.lodestone.bookshelfapi.api.menu.build.TopMenuBuilder;
-import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.LeadPlugin;
-import to.lodestone.leadapi.api.ITeam;
 
 import java.util.Collections;
 import java.util.List;

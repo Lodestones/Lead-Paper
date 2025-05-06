@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>to.lodestone</groupId>
+    <groupId>gg.lode</groupId>
     <artifactId>Lead-Paper</artifactId>
-    <version>1.2.32</version>
+    <version>1.2.41</version>
     <packaging>jar</packaging>
 
     <name>Lead-Paper</name>
@@ -17,7 +17,7 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <url>https://johnaqu1no.com</url>
+    <url>https://lode.gg</url>
 
     <build>
         <plugins>
@@ -33,13 +33,21 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <relocations>
+                                <relocation>
+                                    <pattern>dev.jorel.commandapi</pattern>
+                                    <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -73,6 +81,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>dev.jorel</groupId>
+            <artifactId>commandapi-bukkit-shade</artifactId>
+            <version>10.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>gg.lode</groupId>
+            <artifactId>Bookshelf-API</artifactId>
+            <version>1.1.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
             <version>2.11.6</version>
@@ -91,19 +111,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>to.lodestone</groupId>
-            <artifactId>Bookshelf-API</artifactId>
-            <version>1.1.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>de.rapha149.signgui</groupId>
             <artifactId>signgui</artifactId>
             <version>2.4.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>to.lodestone</groupId>
+            <groupId>gg.lode</groupId>
             <artifactId>Lead-API</artifactId>
             <version>1.0.9</version>
             <scope>compile</scope>
@@ -112,12 +126,6 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20240303</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.jorel</groupId>
-            <artifactId>commandapi-annotations</artifactId>
-            <version>9.0.3</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

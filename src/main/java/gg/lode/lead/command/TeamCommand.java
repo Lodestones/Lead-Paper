@@ -1,8 +1,22 @@
-package to.lodestone.lead.command;
+package gg.lode.lead.command;
 
 import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.*;
 import dev.jorel.commandapi.executors.CommandArguments;
+import gg.lode.bookshelfapi.api.Task;
+import gg.lode.bookshelfapi.api.util.EnumUtil;
+import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.StringUtil;
+import gg.lode.lead.LeadPlugin;
+import gg.lode.lead.menu.TeamEditorMenu;
+import gg.lode.lead.menu.TeamListMenu;
+import gg.lode.lead.team.TeamMember;
+import gg.lode.leadapi.api.GeneratorType;
+import gg.lode.leadapi.api.ITeam;
+import gg.lode.leadapi.api.ITeamMember;
+import gg.lode.leadapi.api.event.*;
+import gg.lode.leadapi.api.exception.TeamAlreadyExistsException;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -12,35 +26,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
-import to.lodestone.bookshelfapi.api.Task;
-import to.lodestone.bookshelfapi.api.command.Command;
-import to.lodestone.bookshelfapi.api.util.EnumUtil;
-import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.bookshelfapi.api.util.StringUtil;
-import to.lodestone.lead.LeadPlugin;
-import to.lodestone.lead.menu.TeamEditorMenu;
-import to.lodestone.lead.menu.TeamListMenu;
-import to.lodestone.lead.team.TeamMember;
-import to.lodestone.leadapi.api.GeneratorType;
-import to.lodestone.leadapi.api.ITeam;
-import to.lodestone.leadapi.api.ITeamMember;
-import to.lodestone.leadapi.api.event.*;
-import to.lodestone.leadapi.api.exception.TeamAlreadyExistsException;
 
 import java.util.*;
 
-public class TeamCommand extends Command {
-
+public class TeamCommand extends CommandAPICommand {
     private final HashMap<UUID, Long> cooldowns = new HashMap<>();
     private final List<UUID> teamReset = new ArrayList<>();
 
     public TeamCommand(LeadPlugin plugin) {
         super("team");
         @Nullable String commandPermission = plugin.config().getString("permissions.team");
-        if (commandPermission != null) permission(commandPermission);
-        aliases("t");
-        subCommand(new Command("kick")
-                .permission(plugin.config().getString("commands.kick", null))
+        if (commandPermission != null) withPermission(commandPermission);
+        withAliases("t");
+        withSubcommand(new CommandAPICommand("kick")
+                .withPermission(plugin.config().getString("commands.kick", null))
                 .withRequirement(sender -> {
                     if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
@@ -52,7 +51,7 @@ public class TeamCommand extends Command {
 
                     return false;
                 })
-                .arguments(new OfflinePlayerArgument("target"))
+                .withArguments(new OfflinePlayerArgument("target"))
                 .executesPlayer((player, args) -> {
                     ITeam team = plugin.getTeam(player.getUniqueId());
                     if (team == null) {
@@ -93,8 +92,8 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("leave")
-                .permission(plugin.config().getString("commands.leave", null))
+        withSubcommand(new CommandAPICommand("leave")
+                .withPermission(plugin.config().getString("commands.leave", null))
                 .withRequirement(sender -> {
                     if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
@@ -134,8 +133,8 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("disband")
-                .permission(plugin.config().getString("commands.disband", null))
+        withSubcommand(new CommandAPICommand("disband")
+                .withPermission(plugin.config().getString("commands.disband", null))
                 .withRequirement(sender -> {
                     if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
@@ -177,9 +176,9 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("edit")
-                .permission(plugin.config().getString("commands.edit", "lodestone.lead.manage"))
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
+        withSubcommand(new CommandAPICommand("edit")
+                .withPermission(plugin.config().getString("commands.edit", "lodestone.lead.manage"))
+                .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
                 .executesPlayer((player, args) -> {
                     if (args.get(0) instanceof String id) {
                         ITeam team = plugin.getTeam(id);
@@ -192,8 +191,8 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("invite")
-                .permission(plugin.config().getString("commands.invite", null))
+        withSubcommand(new CommandAPICommand("invite")
+                .withPermission(plugin.config().getString("commands.invite", null))
                 .withRequirement(sender -> {
                     if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
@@ -205,7 +204,7 @@ public class TeamCommand extends Command {
 
                     return false;
                 })
-                .arguments(new EntitySelectorArgument.OnePlayer("target"))
+                .withArguments(new EntitySelectorArgument.OnePlayer("target"))
                 .executesPlayer((player, args) -> {
                     ITeam team = plugin.getTeam(player.getUniqueId());
                     if (team == null) {
@@ -241,8 +240,8 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("create")
-                .permission(plugin.config().getString("commands.create", null))
+        withSubcommand(new CommandAPICommand("create")
+                .withPermission(plugin.config().getString("commands.create", null))
                 .withRequirement(sender -> {
                     if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
@@ -290,8 +289,8 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("reset")
-                .permission("lodestone.lead.commands.reset")
+        withSubcommand(new CommandAPICommand("reset")
+                .withPermission("lodestone.lead.commands.reset")
                 .executesPlayer((player, args) -> {
                     if (teamReset.contains(player.getUniqueId())) {
                         teamReset.remove(player.getUniqueId());
@@ -310,8 +309,8 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("join")
-                .permission(plugin.config().getString("commands.join", null))
+        withSubcommand(new CommandAPICommand("join")
+                .withPermission(plugin.config().getString("commands.join", null))
                 .withRequirement(sender -> {
                     if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
@@ -323,7 +322,7 @@ public class TeamCommand extends Command {
 
                     return false;
                 })
-                .arguments(new OfflinePlayerArgument("target"))
+                .withArguments(new OfflinePlayerArgument("target"))
                 .executesPlayer((player, args) -> {
                     ITeam team = plugin.getTeam(player.getUniqueId());
                     if (team != null) {
@@ -372,10 +371,10 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("teleport")
-                .permission(plugin.config().getString("commands.teleport", null))
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(a -> plugin.getTeams().stream().map(ITeam::getId).map(String::valueOf).toArray(String[]::new))))
-                .arguments(new EntitySelectorArgument.OneEntity("target"))
+        withSubcommand(new CommandAPICommand("teleport")
+                .withPermission(plugin.config().getString("commands.teleport", null))
+                .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(a -> plugin.getTeams().stream().map(ITeam::getId).map(String::valueOf).toArray(String[]::new))))
+                .withArguments(new EntitySelectorArgument.OneEntity("target"))
                 .executes((sender, args) -> {
                     Entity target = (Entity) args.get("target");
                     String name = (String) args.get("team_id");
@@ -406,8 +405,8 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("chat")
-                .permission(plugin.config().getString("commands.chat", null))
+        withSubcommand(new CommandAPICommand("chat")
+                .withPermission(plugin.config().getString("commands.chat", null))
                 .withRequirement(sender -> {
                     if (!plugin.config().getBoolean("is_public") && !sender.hasPermission("lodestone.lead.manage"))
                         return false;
@@ -433,9 +432,9 @@ public class TeamCommand extends Command {
                     player.sendMessage(MiniMessageUtil.deserialize(teamMember.isInTeamChat() ? "<green>You are now in team chat!" : "<red>You are no longer in team chat!"));
                 })
         );
-        subCommand(new Command("merge")
-                .permission(plugin.config().getString("commands.merge", null))
-                .arguments(new StringArgument("team_one").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("team_two").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
+        withSubcommand(new CommandAPICommand("merge")
+                .withPermission(plugin.config().getString("commands.merge", null))
+                .withArguments(new StringArgument("team_one").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("team_two").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
                 .executes((sender, args) -> {
                     if (args.get(0) instanceof String teamOneName) {
                         if (args.get(1) instanceof String teamTwoName) {
@@ -485,15 +484,17 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("update")
-                .permission("lodestone.lead.commands.update")
+        withSubcommand(new CommandAPICommand("update")
+                .withPermission("lodestone.lead.commands.update")
                 .executesPlayer((player, args) -> {
                     plugin.update();
                     player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully updated all teams!"));
                 })
         );
-        subCommand(new Command("modify")
+        withSubcommand(new CommandAPICommand("modify")
                 .withRequirement((sender) -> {
+                    if (sender == null) return false;
+
                     // does the sender have any of the permission that commands below require?
                     return sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.teleport", "lodestone.lead.manage"))) ||
                             sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.friendly_fire", "lodestone.lead.manage"))) ||
@@ -507,9 +508,9 @@ public class TeamCommand extends Command {
                             sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.color", "lodestone.lead.manage"))) ||
                             sender.hasPermission(Objects.requireNonNull(plugin.config().getString("commands.collidable", "lodestone.lead.manage")));
                 })
-                .subCommand(new Command("color")
-                        .permission(plugin.config().getString("commands.color", null))
-                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_color"))
+                .withSubcommand(new CommandAPICommand("color")
+                        .withPermission(plugin.config().getString("commands.color", null))
+                        .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_color"))
                         .executes((sender, args) -> {
                             if (args.get(0) instanceof String targetTeam) {
                                 if (args.get(1) instanceof String newTeamColor) {
@@ -547,9 +548,9 @@ public class TeamCommand extends Command {
                             }
                         })
                 )
-                .subCommand(new Command("display_name")
-                        .permission(plugin.config().getString("commands.display_name", null))
-                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new GreedyStringArgument("new_name"))
+                .withSubcommand(new CommandAPICommand("display_name")
+                        .withPermission(plugin.config().getString("commands.display_name", null))
+                        .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new GreedyStringArgument("new_name"))
                         .executes((sender, args) -> {
                             if (args.get(0) instanceof String targetTeam) {
                                 if (args.get(1) instanceof String newTeamName) {
@@ -579,9 +580,9 @@ public class TeamCommand extends Command {
                             }
                         })
                 )
-                .subCommand(new Command("id")
-                        .permission(plugin.config().getString("commands.id", null))
-                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_id"))
+                .withSubcommand(new CommandAPICommand("id")
+                        .withPermission(plugin.config().getString("commands.id", null))
+                        .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("new_id"))
                         .executes((sender, args) -> {
                             if (args.get(0) instanceof String targetTeam) {
                                 if (args.get(1) instanceof String newTeamId) {
@@ -613,9 +614,9 @@ public class TeamCommand extends Command {
                             }
                         })
                 )
-                .subCommand(new Command("collidable")
-                        .permission(plugin.config().getString("commands.collidable", null))
-                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
+                .withSubcommand(new CommandAPICommand("collidable")
+                        .withPermission(plugin.config().getString("commands.collidable", null))
+                        .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
                         .executes((sender, args) -> {
                             if (plugin.isTABPresent()) {
                                 sender.sendMessage(MiniMessageUtil.deserialize("<red>This feature is not available with TAB!"));
@@ -642,9 +643,9 @@ public class TeamCommand extends Command {
                             }
                         })
                 )
-                .subCommand(new Command("friendly_fire")
-                        .permission(plugin.config().getString("commands.friendly_fire", null))
-                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new BooleanArgument("value"))
+                .withSubcommand(new CommandAPICommand("friendly_fire")
+                        .withPermission(plugin.config().getString("commands.friendly_fire", null))
+                        .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new BooleanArgument("value"))
                         .executes((sender, args) -> {
                             if (args.get(0) instanceof String targetTeam) {
                                 ITeam team = plugin.getTeam(targetTeam);
@@ -660,9 +661,9 @@ public class TeamCommand extends Command {
                             }
                         })
                 )
-                .subCommand(new Command("nametag")
-                        .permission(plugin.config().getString("commands.nametag", null))
-                        .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
+                .withSubcommand(new CommandAPICommand("nametag")
+                        .withPermission(plugin.config().getString("commands.nametag", null))
+                        .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
                         .executes((sender, args) -> {
                             if (plugin.isTABPresent()) {
                                 sender.sendMessage(MiniMessageUtil.deserialize("<red>This feature is not available with TAB!"));
@@ -692,10 +693,10 @@ public class TeamCommand extends Command {
                         })
                 )
         );
-        subCommand(new Command("place")
-                .aliases("add")
-                .permission(plugin.config().getString("commands.place", null))
-                .arguments(new PlayerArgument("target"), new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
+        withSubcommand(new CommandAPICommand("place")
+                .withAliases("add")
+                .withPermission(plugin.config().getString("commands.place", null))
+                .withArguments(new PlayerArgument("target"), new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
                 .executes((sender, args) -> {
                     if (args.get(0) instanceof Player target) {
                         if (args.get(1) instanceof String targetTeam) {
@@ -733,9 +734,9 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("remove")
-                .permission(plugin.config().getString("commands.remove", null))
-                .arguments(new OfflinePlayerArgument("target"))
+        withSubcommand(new CommandAPICommand("remove")
+                .withPermission(plugin.config().getString("commands.remove", null))
+                .withArguments(new OfflinePlayerArgument("target"))
                 .executes((sender, args) -> {
                     if (args.get(0) instanceof OfflinePlayer target) {
                         ITeam team = plugin.getTeam(target.getUniqueId());
@@ -764,9 +765,9 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(new Command("delete")
-                .permission(plugin.config().getString("commands.delete", null))
-                .arguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
+        withSubcommand(new CommandAPICommand("delete")
+                .withPermission(plugin.config().getString("commands.delete", null))
+                .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
                 .executes((sender, args) -> {
                     if (args.get(0) instanceof String targetTeam) {
                         ITeam team = plugin.getTeam(targetTeam);
@@ -792,19 +793,18 @@ public class TeamCommand extends Command {
                     }
                 })
         );
-        subCommand(
-                new Command("list")
-                        .permission(plugin.config().getString("commands.list", null))
-                        .executesPlayer((player, args) -> {
-                            if (plugin.getTeams().size() == 0) {
-                                player.sendMessage(MiniMessageUtil.deserialize("<red>There are no teams to display!"));
-                                return;
-                            }
+        withSubcommand(new CommandAPICommand("list")
+                .withPermission(plugin.config().getString("commands.list", null))
+                .executesPlayer((player, args) -> {
+                    if (plugin.getTeams().size() == 0) {
+                        player.sendMessage(MiniMessageUtil.deserialize("<red>There are no teams to display!"));
+                        return;
+                    }
 
-                            new TeamListMenu(plugin, player, 0).open();
-                        }));
-        subCommand(new Command("help")
-                .permission(plugin.config().getString("commands.help", null))
+                    new TeamListMenu(plugin, player, 0).open();
+                }));
+        withSubcommand(new CommandAPICommand("help")
+                .withPermission(plugin.config().getString("commands.help", null))
                 .executes(this::executeHelpCommand));
         executes(this::executeHelpCommand);
     }

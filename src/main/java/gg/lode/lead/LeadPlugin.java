@@ -1,6 +1,32 @@
-package to.lodestone.lead;
+package gg.lode.lead;
 
 import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import gg.lode.bookshelfapi.api.Configuration;
+import gg.lode.bookshelfapi.api.Task;
+import gg.lode.bookshelfapi.api.VersionUpdater;
+import gg.lode.bookshelfapi.api.util.EnumUtil;
+import gg.lode.bookshelfapi.api.util.Metrics;
+import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.lead.command.LeadCommand;
+import gg.lode.lead.command.TeamCommand;
+import gg.lode.lead.command.TeamMessageCommand;
+import gg.lode.lead.listener.ChatListener;
+import gg.lode.lead.listener.PlayerListener;
+import gg.lode.lead.listener.WorldListener;
+import gg.lode.lead.team.Team;
+import gg.lode.lead.team.TeamMember;
+import gg.lode.leadapi.ILeadAPI;
+import gg.lode.leadapi.LeadAPI;
+import gg.lode.leadapi.api.GeneratorType;
+import gg.lode.leadapi.api.ITeam;
+import gg.lode.leadapi.api.ITeamMember;
+import gg.lode.leadapi.api.event.TeamCreateEvent;
+import gg.lode.leadapi.api.event.TeamDeleteEvent;
+import gg.lode.leadapi.api.event.TeamRemoveEvent;
+import gg.lode.leadapi.api.exception.MaxTeamLimitException;
+import gg.lode.leadapi.api.exception.TeamAlreadyExistsException;
+import gg.lode.leadapi.api.exception.TeamNotFoundException;
 import me.neznamy.tab.api.TabAPI;
 import me.neznamy.tab.api.TabPlayer;
 import me.neznamy.tab.api.event.plugin.TabLoadEvent;
@@ -13,33 +39,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
-import to.lodestone.bookshelfapi.BookshelfAPI;
-import to.lodestone.bookshelfapi.IBookshelfAPI;
-import to.lodestone.bookshelfapi.api.Configuration;
-import to.lodestone.bookshelfapi.api.Task;
-import to.lodestone.bookshelfapi.api.VersionUpdater;
-import to.lodestone.bookshelfapi.api.util.EnumUtil;
-import to.lodestone.bookshelfapi.api.util.Metrics;
-import to.lodestone.bookshelfapi.api.util.MiniMessageUtil;
-import to.lodestone.lead.command.LeadCommand;
-import to.lodestone.lead.command.TeamCommand;
-import to.lodestone.lead.command.TeamMessageCommand;
-import to.lodestone.lead.listener.ChatListener;
-import to.lodestone.lead.listener.PlayerListener;
-import to.lodestone.lead.listener.WorldListener;
-import to.lodestone.lead.team.Team;
-import to.lodestone.lead.team.TeamMember;
-import to.lodestone.leadapi.ILeadAPI;
-import to.lodestone.leadapi.LeadAPI;
-import to.lodestone.leadapi.api.GeneratorType;
-import to.lodestone.leadapi.api.ITeam;
-import to.lodestone.leadapi.api.ITeamMember;
-import to.lodestone.leadapi.api.event.TeamCreateEvent;
-import to.lodestone.leadapi.api.event.TeamDeleteEvent;
-import to.lodestone.leadapi.api.event.TeamRemoveEvent;
-import to.lodestone.leadapi.api.exception.MaxTeamLimitException;
-import to.lodestone.leadapi.api.exception.TeamAlreadyExistsException;
-import to.lodestone.leadapi.api.exception.TeamNotFoundException;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -48,7 +47,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.32";
+    public static final String VERSION = "v1.2.41";
     private static final int CONFIG_VERSION = 10;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
@@ -63,6 +62,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     @Override
     public void onLoad() {
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).setNamespace("minecraft").shouldHookPaperReload(true));
+
         this.team = new Configuration(this, "teams.yml");
         this.team.initialize();
 
@@ -77,6 +78,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     @Override
     public void onEnable() {
+        CommandAPI.onEnable();
+
         new Metrics(this, 22603); // bStats
 
         if (config().getInt("version") != CONFIG_VERSION) {
@@ -126,10 +129,6 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     public Configuration random() {
         return random;
-    }
-
-    public IBookshelfAPI bookshelf() {
-        return BookshelfAPI.getApi();
     }
 
     private void registerCommands() {
@@ -266,7 +265,9 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         Objects.requireNonNull(team.getId());
                         if (config().getBoolean("verbose"))
                             Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating scoreboard team named %s.]", team.getId()), "lead.debug");
-                        scoreboard.registerNewTeam(team.getId());
+
+                        if (scoreboard.getTeam(team.getId()) == null)
+                            scoreboard.registerNewTeam(team.getId());
                     }
 
                     // Loop through every team now that we know that these teams exist.
@@ -325,6 +326,12 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                getLogger().warning("==========================================");
+                getLogger().warning("Uh oh. An error!");
+                getLogger().warning("Using the built-in vanilla team api comes with stupid bugs.");
+                getLogger().warning("I recommend installing TAB to remove all of these bugs as a whole");
+                getLogger().warning("https://modrinth.com/plugin/tab-was-taken");
+                getLogger().warning("==========================================");
             }
         });
     }

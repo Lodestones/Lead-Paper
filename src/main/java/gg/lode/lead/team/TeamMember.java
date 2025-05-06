@@ -1,7 +1,7 @@
-package to.lodestone.lead.team;
+package gg.lode.lead.team;
 
+import gg.lode.leadapi.api.ITeamMember;
 import org.bukkit.entity.Player;
-import to.lodestone.leadapi.api.ITeamMember;
 
 import java.util.UUID;
 
