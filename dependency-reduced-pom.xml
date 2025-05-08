@@ -4,9 +4,9 @@
   <groupId>gg.lode</groupId>
   <artifactId>Lead-Paper</artifactId>
   <name>Lead-Paper</name>
-    <version>1.2.4</version>
+  <version>1.2.41</version>
   <description>A lightweight plugin that creates visual teams showcased in Civilization or Battle Royale events.</description>
-    <url>https://lode.gg</url>
+  <url>https://lode.gg</url>
   <build>
     <resources>
       <resource>
@@ -25,22 +25,22 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-          <version>3.6.0</version>
+        <version>3.6.0</version>
         <executions>
-            <execution>
-                <phase>package</phase>
-                <goals>
-                    <goal>shade</goal>
-                </goals>
-                <configuration>
-                    <relocations>
-                        <relocation>
-                            <pattern>dev.jorel.commandapi</pattern>
-                            <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
-                        </relocation>
-                    </relocations>
-                </configuration>
-            </execution>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>dev.jorel.commandapi</pattern>
+                  <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

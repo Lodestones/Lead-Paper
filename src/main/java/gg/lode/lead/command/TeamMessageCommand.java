@@ -8,11 +8,14 @@ import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import gg.lode.leadapi.api.ITeamMember;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.Nullable;
 
 public class TeamMessageCommand extends CommandAPICommand {
     public TeamMessageCommand(LeadPlugin plugin) {
         super("teammsg");
         withAliases("tm", "tc", "tmsg");
+        @Nullable String commandPermission = plugin.config().getString("permissions.teammsg");
+        if (commandPermission != null) withPermission(commandPermission);
         withArguments(new GreedyStringArgument("message"));
         executesPlayer((player, args) -> {
             ITeam team = plugin.getTeam(player.getUniqueId());
