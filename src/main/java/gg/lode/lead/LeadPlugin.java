@@ -81,7 +81,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     public void onEnable() {
         CommandAPI.onEnable();
         BookshelfAPI.init(this, BookshelfAPI.Builder.createDisabled()
-                .useMenuManager(true));
+                .useMenuManager(!getServer().getPluginManager().isPluginEnabled("Bookshelf")));
 
         new Metrics(this, 22603); // bStats
 
