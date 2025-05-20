@@ -2,6 +2,7 @@ package gg.lode.lead;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import gg.lode.bookshelfapi.BookshelfAPI;
 import gg.lode.bookshelfapi.api.Configuration;
 import gg.lode.bookshelfapi.api.Task;
 import gg.lode.bookshelfapi.api.VersionUpdater;
@@ -47,7 +48,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.41";
+    public static final String VERSION = "v1.2.42";
     private static final int CONFIG_VERSION = 10;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
@@ -79,6 +80,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     @Override
     public void onEnable() {
         CommandAPI.onEnable();
+        BookshelfAPI.init(this, BookshelfAPI.Builder.createDisabled()
+                .useMenuManager(true));
 
         new Metrics(this, 22603); // bStats
 

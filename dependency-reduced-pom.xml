@@ -4,7 +4,7 @@
   <groupId>gg.lode</groupId>
   <artifactId>Lead-Paper</artifactId>
   <name>Lead-Paper</name>
-  <version>1.2.41</version>
+  <version>1.2.42</version>
   <description>A lightweight plugin that creates visual teams showcased in Civilization or Battle Royale events.</description>
   <url>https://lode.gg</url>
   <build>
@@ -33,12 +33,16 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <relocations>
-                <relocation>
-                  <pattern>dev.jorel.commandapi</pattern>
-                  <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
-                </relocation>
-              </relocations>
+                <relocations>
+                    <relocation>
+                        <pattern>dev.jorel.commandapi</pattern>
+                        <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
+                    </relocation>
+                    <relocation>
+                        <pattern>gg.lode.bookshelfapi</pattern>
+                        <shadedPattern>gg.lode.bookshelfapi.lead</shadedPattern>
+                    </relocation>
+                </relocations>
             </configuration>
           </execution>
         </executions>
@@ -66,7 +70,7 @@
       <releases>
         <enabled>false</enabled>
       </releases>
-      <snapshots/>
+        <snapshots/>
       <id>central-portal-snapshots</id>
       <name>Central Portal Snapshots</name>
       <url>https://central.sonatype.com/repository/maven-snapshots/</url>

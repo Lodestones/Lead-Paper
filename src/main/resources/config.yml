@@ -1,5 +1,4 @@
-# Lead Config v1.2.3
-version: 10
+version: 11
 
 # If verbose is true, the plugin will output more information to the console/admins.
 verbose: false
@@ -48,8 +47,8 @@ should_increment: false # If true, and the generator type is NUMBER, the number 
 # Setting the permission to "null" will make the command publicly accessible.
 # It is recommended to use LuckPerms or another permission plugin to manage permissions.
 permissions:
-  team: "lodestone.lead.commands.team"
-  teammsg: "lodestone.lead.commands.teammsg"
+  team: null
+  teammsg: null
 commands:
   help: null
   list: null

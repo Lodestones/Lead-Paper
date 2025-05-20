@@ -6,7 +6,7 @@
 
     <groupId>gg.lode</groupId>
     <artifactId>Lead-Paper</artifactId>
-    <version>1.2.41</version>
+    <version>1.2.42</version>
     <packaging>jar</packaging>
 
     <name>Lead-Paper</name>
@@ -45,6 +45,10 @@
                                 <relocation>
                                     <pattern>dev.jorel.commandapi</pattern>
                                     <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>gg.lode.bookshelfapi</pattern>
+                                    <shadedPattern>gg.lode.bookshelfapi.lead</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -100,7 +104,7 @@
         <dependency>
             <groupId>gg.lode</groupId>
             <artifactId>Bookshelf-API</artifactId>
-            <version>1.1.41</version>
+            <version>1.1.5</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
