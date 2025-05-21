@@ -543,19 +543,26 @@ public class TeamCommand extends CommandAPICommand {
                     // Grab all online players, and assign them to a team
                     List<ITeam> teams = plugin.getTeams();
                     List<Player> players = new ArrayList<>(plugin.getServer().getOnlinePlayers());
-                    for (ITeam team : teams) {
-                        if (!shouldForce && team.getMembers().size() >= plugin.config().getInt("max_team_size", 5))
-                            continue;
+                    Collections.shuffle(players, LeadPlugin.SEED); // Shuffle players
 
-                        for (int i = 0; i < team.getMembers().size(); i++) {
-                            if (players.isEmpty()) break;
+                    int teamCount = teams.size();
+                    int playerIndex = 0;
 
-                            Player player = players.remove(LeadPlugin.SEED.nextInt(players.size()));
+                    for (Player player : players) {
+                        // Find the next eligible team
+                        for (int offset = 0; offset < teamCount; offset++) {
+                            int teamIdx = (playerIndex + offset) % teamCount;
+                            ITeam team = teams.get(teamIdx);
+                            if (!shouldForce && team.getMembers().size() >= plugin.config().getInt("max_team_size", 5)) {
+                                continue;
+                            }
                             ITeam targetTeam = plugin.getTeam(player.getUniqueId());
-                            if (!shouldForce && targetTeam != null) continue;
+                            if (!shouldForce && targetTeam != null) break;
                             if (targetTeam != null) targetTeam.removeMember(player.getUniqueId());
                             team.addMember(new TeamMember(player));
                             player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
+                            playerIndex = (teamIdx + 1) % teamCount;
+                            break;
                         }
                     }
                 })
