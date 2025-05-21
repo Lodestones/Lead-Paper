@@ -484,11 +484,80 @@ public class TeamCommand extends CommandAPICommand {
                     }
                 })
         );
-        withSubcommand(new CommandAPICommand("update")
-                .withPermission("lodestone.lead.commands.update")
-                .executesPlayer((player, args) -> {
-                    plugin.update();
-                    player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully updated all teams!"));
+        withSubcommand(new CommandAPICommand("spawn")
+                .withPermission(plugin.config().getString("commands.spawn", null))
+                .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(a -> plugin.getTeams().stream().map(ITeam::getId).map(String::valueOf).toArray(String[]::new))))
+                .withSubcommand(new CommandAPICommand("set")
+                        .executes((sender, args) -> {
+                            if (sender instanceof Player player) {
+                                ITeam team = plugin.getTeam(player.getUniqueId());
+                                if (team == null) {
+                                    player.sendMessage(Component.text("That team doesn't exist!").color(NamedTextColor.RED));
+                                    return;
+                                }
+
+                                if (team.getLeaderUniqueId() != null && !team.getLeaderUniqueId().equals(player.getUniqueId())) {
+                                    player.sendMessage(Component.text("You are not the team leader!").color(NamedTextColor.RED));
+                                    return;
+                                }
+
+                                TeamSetSpawnEvent teamSetSpawnEvent = new TeamSetSpawnEvent(team, player.getLocation());
+                                if (teamSetSpawnEvent.callEvent()) {
+                                    team.setSpawnLocation(player.getLocation());
+                                    player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set your team's spawn location!"));
+                                }
+                            } else {
+                                sender.sendMessage(MiniMessageUtil.deserialize("<red>You must be a player to run this command!"));
+                            }
+                        })
+                )
+                .withSubcommand(new CommandAPICommand("reset")
+                        .executes((sender, args) -> {
+                            if (sender instanceof Player player) {
+                                ITeam team = plugin.getTeam(player.getUniqueId());
+                                if (team == null) {
+                                    player.sendMessage(Component.text("You are not in a team!").color(NamedTextColor.RED));
+                                    return;
+                                }
+
+                                if (team.getLeaderUniqueId() != null && !team.getLeaderUniqueId().equals(player.getUniqueId())) {
+                                    player.sendMessage(Component.text("You are not the team leader!").color(NamedTextColor.RED));
+                                    return;
+                                }
+
+                                TeamResetSpawnEvent teamResetSpawnEvent = new TeamResetSpawnEvent(team);
+                                if (teamResetSpawnEvent.callEvent()) {
+                                    team.setSpawnLocation(null);
+                                    player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully reset your team's spawn location!"));
+                                }
+                            } else {
+                                sender.sendMessage(MiniMessageUtil.deserialize("<red>You must be a player to run this command!"));
+                            }
+                        }))
+        );
+        withSubcommand(new CommandAPICommand("shuffle")
+                .withPermission(plugin.config().getString("commands.shuffle", null))
+                .withOptionalArguments(new BooleanArgument("force"))
+                .executes((sender, args) -> {
+                    boolean shouldForce = args.get(0) instanceof Boolean force && force;
+                    // Grab all online players, and assign them to a team
+                    List<ITeam> teams = plugin.getTeams();
+                    List<Player> players = new ArrayList<>(plugin.getServer().getOnlinePlayers());
+                    for (ITeam team : teams) {
+                        if (!shouldForce && team.getMembers().size() >= plugin.config().getInt("max_team_size", 5))
+                            continue;
+
+                        for (int i = 0; i < team.getMembers().size(); i++) {
+                            if (players.isEmpty()) break;
+
+                            Player player = players.remove(LeadPlugin.SEED.nextInt(players.size()));
+                            ITeam targetTeam = plugin.getTeam(player.getUniqueId());
+                            if (!shouldForce && targetTeam != null) continue;
+                            if (targetTeam != null) targetTeam.removeMember(player.getUniqueId());
+                            team.addMember(new TeamMember(player));
+                            player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
+                        }
+                    }
                 })
         );
         withSubcommand(new CommandAPICommand("modify")

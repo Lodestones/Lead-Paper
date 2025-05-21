@@ -5,6 +5,7 @@ import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import gg.lode.leadapi.api.ITeamMember;
 import gg.lode.leadapi.api.event.TeamRemoveEvent;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -22,6 +23,8 @@ public class Team implements ITeam {
     private org.bukkit.scoreboard.Team.OptionStatus collidable;
     private org.bukkit.scoreboard.Team.OptionStatus nameTagVisibility;
     private boolean isFriendlyFireAllowed;
+    @Nullable
+    private Location spawnLocation = null;
 
     @Nullable
     private final UUID leaderUniqueId;
@@ -72,7 +75,8 @@ public class Team implements ITeam {
             ArrayList<UUID> invitations,
             org.bukkit.scoreboard.Team.OptionStatus collidable,
             org.bukkit.scoreboard.Team.OptionStatus nameTagVisibility,
-            boolean isFriendlyFireAllowed
+            boolean isFriendlyFireAllowed,
+            @Nullable Location spawnLocation
     ) {
         this.plugin = plugin;
         this.id = id;
@@ -85,6 +89,7 @@ public class Team implements ITeam {
         this.collidable = collidable;
         this.nameTagVisibility = nameTagVisibility;
         this.isFriendlyFireAllowed = isFriendlyFireAllowed;
+        this.spawnLocation = spawnLocation;
     }
 
     @Override
@@ -159,6 +164,17 @@ public class Team implements ITeam {
     @Override
     public @Nullable UUID getLeaderUniqueId() {
         return leaderUniqueId;
+    }
+
+    @Override
+    public void setSpawnLocation(@Nullable Location location) {
+        this.spawnLocation = location;
+    }
+
+    @Nullable
+    @Override
+    public Location getSpawnLocation() {
+        return spawnLocation;
     }
 
     @Override

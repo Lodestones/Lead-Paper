@@ -1,4 +1,4 @@
-version: 11
+version: 12
 
 # If verbose is true, the plugin will output more information to the console/admins.
 verbose: false
@@ -8,6 +8,9 @@ max_team_size: 5
 
 # If true, the players are allowed to hit each other.
 friendly_fire: true
+
+# If true, players will be assigned to a team automatically.
+auto_assign: false
 
 # How collisions will work per team.
 # - ALWAYS: Players will always collide with each other.
@@ -60,6 +63,8 @@ commands:
   leave: null
   disband: null
   chat: null
+  shuffle: "lodestone.lead.manage"
+  spawn: "lodestone.lead.manage"
   teleport: "lodestone.lead.manage"
   friendly_fire: "lodestone.lead.manage"
   nametag: "lodestone.lead.manage"

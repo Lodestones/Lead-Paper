@@ -62,7 +62,7 @@ public class TeamEditorMenu extends Menu {
                                                     plugin.update();
                                                 player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set the team id to %s.", team.getId()));
                                                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                                                Task.later(plugin, () -> new TeamEditorMenu(plugin, player, team).open(), 1);
+                                                Task.later(plugin, this::update, 1);
                                             } else {
                                                 player.sendMessage(MiniMessageUtil.deserialize("<red>Please input a valid team id."));
                                             }
@@ -103,7 +103,7 @@ public class TeamEditorMenu extends Menu {
                                 event.setCancelled(true);
                                 int ordinal = team.getCollidable().ordinal();
                                 team.setCollidable(Team.OptionStatus.values()[(ordinal + 1) % Team.OptionStatus.values().length]);
-                                new TeamEditorMenu(plugin, player, team).open();
+                                this.update();
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
@@ -112,7 +112,7 @@ public class TeamEditorMenu extends Menu {
                                 event.setCancelled(true);
                                 int ordinal = team.getNameTagVisibility().ordinal();
                                 team.setNameTagVisibility(Team.OptionStatus.values()[(ordinal + 1) % Team.OptionStatus.values().length]);
-                                new TeamEditorMenu(plugin, player, team).open();
+                                this.update();
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
@@ -121,7 +121,7 @@ public class TeamEditorMenu extends Menu {
                                 event.setCancelled(true);
                                 team.setFriendlyFireAllowed(!team.isFriendlyFireAllowed());
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
-                                new TeamEditorMenu(plugin, player, team).open();
+                                this.update();
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
                             })
@@ -147,7 +147,7 @@ public class TeamEditorMenu extends Menu {
                                                     plugin.update();
                                                 player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set the team color to <%s>%s.", team.getColor(), team.getColor()));
                                                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                                                Task.later(plugin, () -> new TeamEditorMenu(plugin, player, team).open(), 1);
+                                                Task.later(plugin, this::update, 1);
                                             } else {
                                                 player.sendMessage(MiniMessageUtil.deserialize("<red>Please input a valid hex color."));
                                             }

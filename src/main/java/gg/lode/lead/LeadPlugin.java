@@ -33,6 +33,7 @@ import me.neznamy.tab.api.TabPlayer;
 import me.neznamy.tab.api.event.plugin.TabLoadEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -81,7 +82,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     public void onEnable() {
         CommandAPI.onEnable();
         BookshelfAPI.init(this, BookshelfAPI.Builder.createDisabled()
-                .useMenuManager(!getServer().getPluginManager().isPluginEnabled("Bookshelf")));
+                .useMenuManager(true));
 
         new Metrics(this, 22603); // bStats
 
@@ -477,6 +478,18 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 }
 
                 UUID leaderUniqueId = section.getString("leaderUniqueId") == null ? null : UUID.fromString(Objects.requireNonNull(section.getString("leaderUniqueId")));
+                Location spawnLocation = null;
+                if (section.getString("spawn_location") != null) {
+                    String[] location = Objects.requireNonNull(section.getString("spawn_location")).split(",");
+                    spawnLocation = new Location(
+                            Bukkit.getWorld(location[0]),
+                            Double.parseDouble(location[1]),
+                            Double.parseDouble(location[2]),
+                            Double.parseDouble(location[3]),
+                            Float.parseFloat(location[4]),
+                            Float.parseFloat(location[5])
+                    );
+                }
 
                 Team team = new Team(
                         this,
@@ -489,7 +502,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         new ArrayList<>(section.getStringList("invitations").stream().map(UUID::fromString).toList()),
                         EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
                         EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
-                        section.getBoolean("is_friendly_fire_allowed", true)
+                        section.getBoolean("is_friendly_fire_allowed", true),
+                        spawnLocation
                 );
                 teams.put(team.getUniqueId(), team);
             }
