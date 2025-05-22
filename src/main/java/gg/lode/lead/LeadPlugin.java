@@ -12,9 +12,10 @@ import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
 import gg.lode.lead.command.LeadCommand;
 import gg.lode.lead.command.TeamCommand;
 import gg.lode.lead.command.TeamMessageCommand;
-import gg.lode.lead.listener.ChatListener;
 import gg.lode.lead.listener.PlayerListener;
 import gg.lode.lead.listener.WorldListener;
+import gg.lode.lead.listener.chat.BookshelfChatListener;
+import gg.lode.lead.listener.chat.SpigotChatListener;
 import gg.lode.lead.team.Team;
 import gg.lode.lead.team.TeamMember;
 import gg.lode.leadapi.ILeadAPI;
@@ -49,8 +50,8 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.42";
-    private static final int CONFIG_VERSION = 10;
+    public static final String VERSION = "v1.2.43";
+    private static final int CONFIG_VERSION = 12;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
@@ -107,7 +108,10 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         this.registerCommands();
         this.reload(true);
 
-        getServer().getPluginManager().registerEvents(new ChatListener(this), this);
+        if (getServer().getPluginManager().isPluginEnabled("Bookshelf"))
+            getServer().getPluginManager().registerEvents(new BookshelfChatListener(this), this);
+        else getServer().getPluginManager().registerEvents(new SpigotChatListener(this), this);
+
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
         getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://modrinth.com/plugin/lead", "https://api.modrinth.com/v2/project/lead/version", VERSION), this);

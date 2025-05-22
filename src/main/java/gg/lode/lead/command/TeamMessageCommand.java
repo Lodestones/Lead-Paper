@@ -2,12 +2,13 @@ package gg.lode.lead.command;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
-import gg.lode.bookshelfapi.api.event.PlayerChatEvent;
 import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.VariableContext;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import gg.lode.leadapi.api.ITeamMember;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 public class TeamMessageCommand extends CommandAPICommand {
@@ -25,11 +26,29 @@ public class TeamMessageCommand extends CommandAPICommand {
             }
 
             if (args.get("message") instanceof String message) {
-                PlayerChatEvent playerChatEvent = new PlayerChatEvent(player, MiniMessageUtil.deserialize("<green><bold>TEAM »<reset>"), Component.text(message));
-                playerChatEvent.playerColor(team.getColor());
-                playerChatEvent.messageColor("#FFFFFF");
-                playerChatEvent.setViewers(team.getMembers().stream().map(ITeamMember::getUniqueId).toList());
-                playerChatEvent.callEvent();
+                VariableContext ctx = new VariableContext();
+                String font = plugin.config().getString("font", "default");
+                boolean colorNames = plugin.config().getBoolean("color_names");
+
+                ctx.set("font", font);
+                ctx.set("teamName", team.getName());
+                ctx.set("teamColor", team.getColor());
+                ctx.set("playerName", player.getName());
+                ctx.set("message", message);
+                ctx.set("messageColor", "#FFFFFF");
+                ctx.set("colorNames", colorNames ? String.format("<%s>", team.getColor()) : "<reset>");
+
+                Component prefix = MiniMessageUtil.deserialize("<green><bold>TEAM » ");
+                Component teamLabel = ctx.replaceAsComponent("<reset><font:<font>><<teamColor>><teamName></font><colorNames> ");
+                Component messageColor = ctx.replaceAsComponent("<playerName>: <message>");
+
+                for (ITeamMember member : team.getMembers()) {
+                    Player memberPlayer = plugin.getServer().getPlayer(member.getUniqueId());
+                    if (memberPlayer != null) {
+                        Component messageToSend = MiniMessageUtil.persistStyle(prefix, teamLabel).append(messageColor);
+                        memberPlayer.sendMessage(messageToSend);
+                    }
+                }
             }
         });
     }

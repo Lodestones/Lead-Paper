@@ -4,7 +4,7 @@
   <groupId>gg.lode</groupId>
   <artifactId>Lead-Paper</artifactId>
   <name>Lead-Paper</name>
-  <version>1.2.42</version>
+  <version>1.2.43</version>
   <description>A lightweight plugin that creates visual teams showcased in Civilization or Battle Royale events.</description>
   <url>https://lode.gg</url>
   <build>
@@ -37,10 +37,6 @@
                 <relocation>
                   <pattern>dev.jorel.commandapi</pattern>
                   <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>gg.lode.bookshelfapi</pattern>
-                  <shadedPattern>gg.lode.bookshelfapi.lead</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
@@ -76,17 +72,23 @@
       <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </repository>
   </repositories>
-  <dependencies>
-    <dependency>
-      <groupId>me.clip</groupId>
-      <artifactId>placeholderapi</artifactId>
-      <version>2.11.6</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.NEZNAMY</groupId>
-      <artifactId>TAB-API</artifactId>
-      <version>5.0.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>gg.lode</groupId>
+            <artifactId>Bookshelf-Events</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.11.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.NEZNAMY</groupId>
+            <artifactId>TAB-API</artifactId>
+            <version>5.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

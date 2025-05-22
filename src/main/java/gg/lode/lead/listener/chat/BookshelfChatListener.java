@@ -1,6 +1,6 @@
-package gg.lode.lead.listener;
+package gg.lode.lead.listener.chat;
 
-import gg.lode.bookshelfapi.api.event.PlayerChatEvent;
+import gg.lode.bookshelf.event.PlayerChatEvent;
 import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
@@ -12,11 +12,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-public class ChatListener implements Listener {
+public class BookshelfChatListener implements Listener {
 
     private final LeadPlugin plugin;
 
-    public ChatListener(LeadPlugin plugin) {
+    public BookshelfChatListener(LeadPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -24,6 +24,7 @@ public class ChatListener implements Listener {
     public void on(PlayerChatEvent event) {
         Player player = event.getPlayer();
         ITeam team = plugin.getTeam(player.getUniqueId());
+
         if (team != null) {
             ITeamMember teamMember = team.getMember(player.getUniqueId());
             assert teamMember != null;
