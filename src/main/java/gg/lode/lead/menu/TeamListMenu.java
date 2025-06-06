@@ -37,7 +37,7 @@ public class TeamListMenu extends Menu {
     }
 
     @Override
-    protected @NotNull TopMenuBuilder getTopMenuBuilder(TopMenuBuilder topMenuBuilder) {
+    protected @NotNull TopMenuBuilder getTopMenuBuilder(TopMenuBuilder builder) {
         List<ITeam> teams = new ArrayList<>(plugin.getTeams());
         teams.sort((a, b) -> {
             // check if the team id is a number, if so sort it by number, otherwise return it as the highest sorting to be on top
@@ -51,10 +51,11 @@ public class TeamListMenu extends Menu {
         ItemStack pane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         pane.editMeta(meta -> meta.displayName(Component.empty()));
 
-        topMenuBuilder
+        builder
                 .setTitle("Team List")
                 .setRows(6)
-                .outline(pane);
+                .outline(pane)
+                .addClickAction(e -> e.setCancelled(true));
 
         List<List<ITeam>> chunkedPages = ArrayUtil.chunk(teams, 7 * 4);
         List<ITeam> currentPage = chunkedPages.get(page);
@@ -68,7 +69,7 @@ public class TeamListMenu extends Menu {
         ItemStack back = new ItemStack(Material.BARRIER);
         back.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageUtil.deserialize("<reset><red>Back").decoration(TextDecoration.ITALIC, false)));
 
-        topMenuBuilder.editRow(0,
+        builder.editRow(0,
                 rowBuilder -> rowBuilder.setSlot(0, back,
                         event -> {
                             event.setCancelled(true);
@@ -107,12 +108,12 @@ public class TeamListMenu extends Menu {
 
             listHead.setItemMeta(meta);
 
-            topMenuBuilder.editRow(_c[1], rowBuilder -> rowBuilder.setSlot(_c[0], listHead, event -> event.setCancelled(true)));
+            builder.editRow(_c[1], rowBuilder -> rowBuilder.setSlot(_c[0], listHead, event -> event.setCancelled(true)));
 
             _c[0]++;
         }
 
-        return topMenuBuilder
+        return builder
                 .editRow(5, rowBuilder -> {
                     if (page > 0) {
                         rowBuilder.setSlot(0,
