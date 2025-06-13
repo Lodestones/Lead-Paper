@@ -822,14 +822,15 @@ public class TeamCommand extends CommandAPICommand {
                             return;
                         }
 
-                        TeamLeaveEvent leaveEvent = new TeamLeaveEvent(target, team);
-                        if (leaveEvent.callEvent()) {
+                        TeamRemoveEvent removeEvent = new TeamRemoveEvent(team, target.getUniqueId());
+                        if (removeEvent.callEvent()) {
                             for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                 Player p = plugin.getServer().getPlayer(playerUniqueId);
                                 if (p != null)
                                     p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><red>PLAYER REMOVED\n  <reset><yellow>%s</yellow> <gray>has been removed from your team!\n ", target.getName())));
                             }
 
+                            new TeamLeaveEvent(target, team).callEvent();
                             team.removeMember(target.getUniqueId());
 
                             sender.sendMessage(MiniMessageUtil.deserialize(String.format("Removed <yellow>%s <white>from <%s>Team %s", target.getName(), team.getColor(), team.getId())));
