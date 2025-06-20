@@ -32,6 +32,8 @@ import gg.lode.leadapi.api.exception.TeamNotFoundException;
 import me.neznamy.tab.api.TabAPI;
 import me.neznamy.tab.api.TabPlayer;
 import me.neznamy.tab.api.event.plugin.TabLoadEvent;
+import me.neznamy.tab.api.nametag.NameTagManager;
+import me.neznamy.tab.api.tablist.TabListFormatManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -213,8 +215,11 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                     for (TabPlayer onlinePlayer : tabApiInstance.getOnlinePlayers()) {
                         @Nullable ITeam team = getTeam(onlinePlayer.getUniqueId());
                         if (team == null) {
-                            Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, null);
-                            Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, null);
+                            TabListFormatManager tabListFormatManager = tabApiInstance.getTabListFormatManager();
+                            if (tabListFormatManager != null) tabListFormatManager.setPrefix(onlinePlayer, null);
+
+                            NameTagManager nameTagManager = tabApiInstance.getNameTagManager();
+                            if (nameTagManager != null) nameTagManager.setPrefix(onlinePlayer, null);
                             continue;
                         }
 
