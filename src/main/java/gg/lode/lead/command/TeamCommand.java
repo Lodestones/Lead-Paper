@@ -254,7 +254,7 @@ public class TeamCommand extends CommandAPICommand {
 
                     return false;
                 })
-                .withArguments(new GreedyStringArgument("name").withRequirement(sender -> plugin.config().getBoolean("nameable_teams")))
+                .withOptionalArguments(new GreedyStringArgument("name").withRequirement(sender -> plugin.config().getBoolean("nameable_teams")))
                 .executesPlayer((player, args) -> {
                     try {
                         if (this.cooldowns.containsKey(player.getUniqueId()) && this.cooldowns.get(player.getUniqueId()) - System.currentTimeMillis() > 0) {
@@ -306,6 +306,8 @@ public class TeamCommand extends CommandAPICommand {
 
                                     CommandAPI.updateRequirements(player);
                                 }
+                            } else {
+                                player.sendMessage(MiniMessageUtil.deserialize("<red>Please specify a team name to use!"));
                             }
                         } else {
                             TeamCreateByPlayerEvent teamCreateByPlayerEvent = new TeamCreateByPlayerEvent(team, player);
