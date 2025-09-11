@@ -137,7 +137,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
-        getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://modrinth.com/plugin/lead", "https://api.modrinth.com/v2/project/lead/version", VERSION), this);
+        getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://lode.gg/plugin/lead", "https://lode.gg/api/plugins/lead/version", VERSION), this);
 
         this.isTABPresent = getServer().getPluginManager().isPluginEnabled("TAB");
         if (this.isTABPresent) {
