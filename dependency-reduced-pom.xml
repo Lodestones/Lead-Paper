@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>gg.lode</groupId>
   <artifactId>Lead-Paper</artifactId>
   <name>Lead-Paper</name>
-  <version>1.2.44</version>
-  <description>A lightweight plugin that creates visual teams showcased in Civilization or Battle Royale events.</description>
+  <version>1.2.5</version>
+  <description>A lightweight plugin that creates visual teams showcased in Civilization, Battle Royale, or SMP events.
+  </description>
   <url>https://lode.gg</url>
   <build>
     <resources>

@@ -2,6 +2,7 @@ package gg.lode.lead.listener.chat;
 
 import gg.lode.bookshelf.event.PlayerChatEvent;
 import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.VariableContext;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import gg.lode.leadapi.api.ITeamMember;
@@ -33,9 +34,32 @@ public class BookshelfChatListener implements Listener {
             event.playerColor("#FFFFFF");
 
             if (teamMember.isInTeamChat()) {
-                event.setViewers(team.getMembers().stream().map(ITeamMember::getUniqueId).toList());
-                event.prefix(MiniMessageUtil.persistStyle(MiniMessageUtil.deserialize("<green><bold>TEAM » "), MiniMessageUtil.deserialize("<reset><font:%s><%s>%s</font><%s>", plugin.config().getString("font", "default"), team.getColor(), team.getName(), team.getColor())));
-                event.playerColor(team.getColor());
+                VariableContext ctx = new VariableContext();
+                String font = plugin.config().getString("font", "default");
+                boolean colorNames = plugin.config().getBoolean("color_names");
+
+                ctx.set("font", font);
+                ctx.set("teamName", team.getName());
+                ctx.set("teamColor", team.getColor());
+                ctx.set("playerName", player.getName());
+                ctx.set("message", MiniMessageUtil.serialize(event.message()));
+                ctx.set("messageColor", "#FFFFFF");
+                ctx.set("colorNames", colorNames ? String.format("<%s>", team.getColor()) : "<reset>");
+
+                Component prefix = MiniMessageUtil.deserialize("<green><bold>TEAM » ");
+                Component teamLabel = ctx.replaceAsComponent("<reset><font:<font>><<teamColor>><teamName></font><colorNames> ");
+                Component messageColor = ctx.replaceAsComponent("<playerName>: <message>");
+
+                for (ITeamMember member : team.getMembers()) {
+                    Player memberPlayer = plugin.getServer().getPlayer(member.getUniqueId());
+                    if (memberPlayer != null) {
+                        Component messageToSend = MiniMessageUtil.persistStyle(prefix, teamLabel).append(messageColor);
+                        memberPlayer.sendMessage(messageToSend);
+                    }
+                }
+
+                event.setCancelled(true);
+                return;
             } else {
                 Component newPrefix = MiniMessageUtil.persistStyle(MiniMessageUtil.deserialize("<font:%s><%s>%s</font>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName(), String.format("<%s>", plugin.config().getBoolean("color_names") ? team.getColor() : "reset"))).decoration(TextDecoration.BOLD, false);
                 if (event.prefix() == null)
@@ -47,7 +71,7 @@ public class BookshelfChatListener implements Listener {
             return;
         }
 
-        event.setModified(false);
+        event.setModified(true);
     }
 
 }

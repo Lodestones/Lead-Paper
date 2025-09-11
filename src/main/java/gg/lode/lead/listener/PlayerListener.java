@@ -44,7 +44,7 @@ public class PlayerListener implements Listener {
                 player.teleport(team.getSpawnLocation());
             }
 
-            player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <bold><green>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
+            player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
         }
     }
 

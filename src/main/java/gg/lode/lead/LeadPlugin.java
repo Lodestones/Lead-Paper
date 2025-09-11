@@ -52,7 +52,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.44";
+    public static final String VERSION = "v1.2.5";
     private static final int CONFIG_VERSION = 12;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
@@ -79,6 +79,27 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         this.random.initialize();
 
         LeadAPI.setApi(this);
+        updateConfigToLatest();
+    }
+
+    private void updateConfigToLatest() {
+        if (config.getInt("version") < CONFIG_VERSION) {
+            getLogger().info("Updating configuration to the latest version...");
+            if (config.getInt("version") == 12) {
+                config.set("nameable_teams", true);
+                config.set("minimum_team_name_length", 3);
+                config.set("maximum_team_name_length", 16);
+            }
+
+            // Recursively call this method to ensure all updates are applied
+            config.set("version", config.getInt("version") + 1);
+            if (config.getInt("version") < CONFIG_VERSION) {
+                updateConfigToLatest();
+            } else {
+                config.save();
+                getLogger().info("Configuration updated to the latest version successfully.");
+            }
+        }
     }
 
     @Override
