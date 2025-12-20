@@ -1,14 +1,16 @@
 package gg.lode.lead.command;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.*;
 import dev.jorel.commandapi.executors.CommandArguments;
 import gg.lode.bookshelfapi.api.Task;
-import gg.lode.bookshelfapi.api.util.EnumUtil;
-import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
-import gg.lode.bookshelfapi.api.util.StringUtil;
+import gg.lode.bookshelfapi.api.util.EnumHelper;
+import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
+import gg.lode.bookshelfapi.api.util.StringHelper;
+import gg.lode.bookshelfcmd.util.CommandHelper;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.lead.menu.TeamEditorMenu;
 import gg.lode.lead.menu.TeamListMenu;
@@ -52,7 +54,7 @@ public class TeamCommand extends CommandAPICommand {
 
                     return false;
                 })
-                .withArguments(new OfflinePlayerArgument("target"))
+                .withArguments(new PlayerProfileArgument("target"))
                 .executesPlayer((player, args) -> {
                     ITeam team = plugin.getTeam(player.getUniqueId());
                     if (team == null) {
@@ -65,9 +67,11 @@ public class TeamCommand extends CommandAPICommand {
                         return;
                     }
 
-                    if (args.get(0) instanceof OfflinePlayer target) {
-                        if (target.getName() == null) {
-                            player.sendMessage(MiniMessageUtil.deserialize("<red>That player is not online"));
+                    if (args.get(0) instanceof List<?> l) {
+                        OfflinePlayer target = CommandHelper.convertPlayerProfileToOfflinePlayer((List<PlayerProfile>) l);
+
+                        if (target == null || target.getName() == null) {
+                            player.sendMessage(MiniMessageHelper.deserialize("<red>That player is not online"));
                             return;
                         }
 
@@ -81,7 +85,7 @@ public class TeamCommand extends CommandAPICommand {
                             for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                 Player p = plugin.getServer().getPlayer(playerUniqueId);
                                 if (p != null)
-                                    p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <red><bold>PLAYER KICKED\n  <reset><yellow>%s</yellow> <gray>has been kicked from the team!\n ", target.getName())));
+                                    p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <red><bold>PLAYER KICKED\n  <reset><yellow>%s</yellow> <gray>has been kicked from the team!\n ", target.getName())));
                             }
 
                             team.removeMember(target.getUniqueId());
@@ -123,7 +127,7 @@ public class TeamCommand extends CommandAPICommand {
                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                             Player p = plugin.getServer().getPlayer(playerUniqueId);
                             if (p != null)
-                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <red><bold>PLAYER LEFT\n  <reset><yellow>%s</yellow> <gray>has left the team!\n ", player.getName())));
+                                p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <red><bold>PLAYER LEFT\n  <reset><yellow>%s</yellow> <gray>has left the team!\n ", player.getName())));
                         }
 
                         team.removeMember(player.getUniqueId());
@@ -164,7 +168,7 @@ public class TeamCommand extends CommandAPICommand {
                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                             Player p = plugin.getServer().getPlayer(playerUniqueId);
                             if (p != null)
-                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <red><bold>TEAM DISBANDED \n  <reset><yellow>%s</yellow> <gray>has disbanded the team!\n ", player.getName())));
+                                p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <red><bold>TEAM DISBANDED \n  <reset><yellow>%s</yellow> <gray>has disbanded the team!\n ", player.getName())));
                         }
 
                         this.cooldowns.put(player.getUniqueId(), System.currentTimeMillis() + (player.isOp() ? 3000 : 10000));
@@ -232,9 +236,9 @@ public class TeamCommand extends CommandAPICommand {
                         TeamInviteEvent teamInvite = new TeamInviteEvent(team, target);
                         if (teamInvite.callEvent()) {
                             team.addInvitation(target.getUniqueId());
-                            player.sendMessage(MiniMessageUtil.deserialize(String.format("<yellow>%s</yellow> <gray>has been invited to your team!", target.getName())));
+                            player.sendMessage(MiniMessageHelper.deserialize(String.format("<yellow>%s</yellow> <gray>has been invited to your team!", target.getName())));
 
-                            target.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <yellow><bold>INVITE PENDING</yellow>\n  <reset>You've been invited to join <yellow>%s's</yellow> team!\n  You can type \"/team join %s\" to join their team!\n  <reset><yellow><bold>CLICK TO JOIN TEAM", player.getName(), player.getName()))
+                            target.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <yellow><bold>INVITE PENDING</yellow>\n  <reset>You've been invited to join <yellow>%s's</yellow> team!\n  You can type \"/team join %s\" to join their team!\n  <reset><yellow><bold>CLICK TO JOIN TEAM", player.getName(), player.getName()))
                                     .hoverEvent(HoverEvent.showText(Component.text(String.format("Click to join %s's team!", player.getName()))))
                                     .clickEvent(ClickEvent.runCommand(String.format("/team join %s", player.getName()))));
                         }
@@ -259,7 +263,7 @@ public class TeamCommand extends CommandAPICommand {
                     try {
                         if (this.cooldowns.containsKey(player.getUniqueId()) && this.cooldowns.get(player.getUniqueId()) - System.currentTimeMillis() > 0) {
                             long cooldownFor = this.cooldowns.get(player.getUniqueId()) - System.currentTimeMillis();
-                            player.sendMessage(MiniMessageUtil.deserialize("<red>You are on cooldown for %s! Try again later.", StringUtil.getTimeString(cooldownFor)));
+                            player.sendMessage(MiniMessageHelper.deserialize(String.format("<red>You are on cooldown for %s! Try again later.", StringHelper.getTimeString(cooldownFor))));
                             return;
                         }
 
@@ -279,18 +283,18 @@ public class TeamCommand extends CommandAPICommand {
                             if (args.get(0) instanceof String teamName) {
                                 int minimumTeamLength = plugin.config().getInt("minimum_team_name_length", 3);
                                 if (teamName.length() < minimumTeamLength) {
-                                    player.sendMessage(MiniMessageUtil.deserialize("<red>The team name cannot be less than " + minimumTeamLength + " characters."));
+                                    player.sendMessage(MiniMessageHelper.deserialize("<red>The team name cannot be less than " + minimumTeamLength + " characters."));
                                     return;
                                 }
 
                                 int maximumTeamLength = plugin.config().getInt("maximum_team_name_length", 16);
                                 if (teamName.length() > maximumTeamLength) {
-                                    player.sendMessage(MiniMessageUtil.deserialize("<red>The team name cannot be less than " + maximumTeamLength + " characters."));
+                                    player.sendMessage(MiniMessageHelper.deserialize("<red>The team name cannot be less than " + maximumTeamLength + " characters."));
                                     return;
                                 }
 
                                 if (!teamName.matches("[ 0-9a-zA-Z_+-]+")) {
-                                    player.sendMessage(MiniMessageUtil.deserialize("<red>You can only use alphanumeric characters as well as -, _, +, and -."));
+                                    player.sendMessage(MiniMessageHelper.deserialize("<red>You can only use alphanumeric characters as well as -, _, +, and -."));
                                     return;
                                 }
 
@@ -300,22 +304,22 @@ public class TeamCommand extends CommandAPICommand {
                                     team.setId(teamName.toUpperCase().replaceAll(" ", "_"));
                                     team.addMember(new TeamMember(player));
 
-                                    player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <green><bold>TEAM CREATED\n  <reset><gray>You've created <yellow>%s\n ", teamName)));
+                                    player.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <green><bold>TEAM CREATED\n  <reset><gray>You've created <yellow>%s\n ", teamName)));
                                     if (plugin.config().getBoolean("automatic_updates", true))
                                         plugin.update();
 
                                     CommandAPI.updateRequirements(player);
                                 }
                             } else {
-                                player.sendMessage(MiniMessageUtil.deserialize("<red>Please specify a team name to use!"));
+                                player.sendMessage(MiniMessageHelper.deserialize("<red>Please specify a team name to use!"));
                             }
                         } else {
                             TeamCreateByPlayerEvent teamCreateByPlayerEvent = new TeamCreateByPlayerEvent(team, player);
                             if (teamCreateByPlayerEvent.callEvent()) {
-                                team = plugin.createTeamByType(player, EnumUtil.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NUMBER));
+                                team = plugin.createTeamByType(player, EnumHelper.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NUMBER));
                                 team.addMember(new TeamMember(player));
 
-                                player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <green><bold>TEAM CREATED\n  <reset><gray>You've created <yellow>Team %s\n ", team.getId())));
+                                player.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <green><bold>TEAM CREATED\n  <reset><gray>You've created <yellow>Team %s\n ", team.getId())));
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
 
@@ -324,11 +328,12 @@ public class TeamCommand extends CommandAPICommand {
                         }
                     } catch (Exception | TeamAlreadyExistsException err) {
                         err.printStackTrace();
-                        player.sendMessage(MiniMessageUtil.deserialize("<red><bold>ERROR! An unexpected error has occurred! | %s", err.toString()));
+                        player.sendMessage(MiniMessageHelper.deserialize(String.format("<red><bold>ERROR! An unexpected error has occurred! | %s", err)));
                     }
                 })
         );
         withSubcommand(new CommandAPICommand("reset")
+                .withAliases("clear")
                 .withPermission(convertPermission("lodestone.lead.commands.reset"))
                 .executesPlayer((player, args) -> {
                     if (teamReset.contains(player.getUniqueId())) {
@@ -338,10 +343,10 @@ public class TeamCommand extends CommandAPICommand {
                         plugin.teams().save();
                         plugin.reload(true);
 
-                        player.sendMessage(MiniMessageUtil.deserialize("<green>All teams have been reset!"));
+                        player.sendMessage(MiniMessageHelper.deserialize("<green>All teams have been reset!"));
                     } else {
-                        player.sendMessage(MiniMessageUtil.deserialize("<red>Are you sure you want to reset all teams?"));
-                        player.sendMessage(MiniMessageUtil.deserialize("<red>Run this command again to confirm!"));
+                        player.sendMessage(MiniMessageHelper.deserialize("<red>Are you sure you want to reset all teams?"));
+                        player.sendMessage(MiniMessageHelper.deserialize("<red>Run this command again to confirm!"));
                         teamReset.add(player.getUniqueId());
 
                         Task.later(plugin, () -> teamReset.remove(player.getUniqueId()), 20 * 5);
@@ -361,7 +366,7 @@ public class TeamCommand extends CommandAPICommand {
 
                     return false;
                 })
-                .withArguments(new OfflinePlayerArgument("target"))
+                .withArguments(new PlayerProfileArgument("target"))
                 .executesPlayer((player, args) -> {
                     ITeam team = plugin.getTeam(player.getUniqueId());
                     if (team != null) {
@@ -369,7 +374,13 @@ public class TeamCommand extends CommandAPICommand {
                         return;
                     }
 
-                    if (args.get(0) instanceof Player target) {
+                    if (args.get(0) instanceof List<?> l) {
+                        OfflinePlayer target = CommandHelper.convertPlayerProfileToOfflinePlayer((List<PlayerProfile>) l);
+                        if (target == null || target.getName() == null) {
+                            player.sendMessage(MiniMessageHelper.deserialize("<red>That player is not online"));
+                            return;
+                        }
+
                         if (target.getName().equalsIgnoreCase(player.getName())) {
                             player.sendMessage(Component.text("You cannot join yourself.").color(NamedTextColor.RED));
                             return;
@@ -399,7 +410,7 @@ public class TeamCommand extends CommandAPICommand {
                             for (UUID playerUniqueId : targetTeam.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                 Player p = plugin.getServer().getPlayer(playerUniqueId);
                                 if (p != null)
-                                    p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
+                                    p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
                             }
 
                             if (plugin.config().getBoolean("automatic_updates", true))
@@ -422,7 +433,7 @@ public class TeamCommand extends CommandAPICommand {
 
                     ITeam team = plugin.getTeam(name);
                     if (team == null) {
-                        sender.sendMessage(MiniMessageUtil.deserialize("<red>That team doesn't exist!"));
+                        sender.sendMessage(MiniMessageHelper.deserialize("<red>That team doesn't exist!"));
                         return;
                     }
 
@@ -438,9 +449,9 @@ public class TeamCommand extends CommandAPICommand {
                         }
 
                         if (c > 0)
-                            sender.sendMessage(MiniMessageUtil.deserialize("Teleported <%s>Team %s <reset>to %s", team.getColor(), team.getId(), target.getName()));
+                            sender.sendMessage(MiniMessageHelper.deserialize(String.format("Teleported <%s>Team %s <reset>to %s", team.getColor(), team.getId(), target.getName())));
                         else
-                            sender.sendMessage(MiniMessageUtil.deserialize("<red>No members of that team are online!"));
+                            sender.sendMessage(MiniMessageHelper.deserialize("<red>No members of that team are online!"));
                     }
                 })
         );
@@ -468,7 +479,7 @@ public class TeamCommand extends CommandAPICommand {
                     assert teamMember != null;
 
                     teamMember.setInTeamChat(!teamMember.isInTeamChat());
-                    player.sendMessage(MiniMessageUtil.deserialize(teamMember.isInTeamChat() ? "<green>You are now in team chat!" : "<red>You are no longer in team chat!"));
+                    player.sendMessage(MiniMessageHelper.deserialize(teamMember.isInTeamChat() ? "<green>You are now in team chat!" : "<red>You are no longer in team chat!"));
                 })
         );
         withSubcommand(new CommandAPICommand("merge")
@@ -491,7 +502,7 @@ public class TeamCommand extends CommandAPICommand {
                             }
 
                             if (Objects.equals(teamOne.getId(), teamTwo.getId())) {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>You cannot merge two of the same teams!"));
+                                sender.sendMessage(MiniMessageHelper.deserialize("<red>You cannot merge two of the same teams!"));
                                 return;
                             }
 
@@ -506,13 +517,13 @@ public class TeamCommand extends CommandAPICommand {
                                     for (UUID playerUniqueId : originalMembers.stream().map(ITeamMember::getUniqueId).toList()) {
                                         Player p = plugin.getServer().getPlayer(playerUniqueId);
                                         if (p != null)
-                                            p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", teamMember.getName())));
+                                            p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", teamMember.getName())));
                                     }
                                 }
 
                                 plugin.deleteTeam(teamTwo);
 
-                                sender.sendMessage(MiniMessageUtil.deserialize(String.format("Merged <yellow>%s <white>members to Team %s", teamTwo.getMembers().size(), teamOne.getId())));
+                                sender.sendMessage(MiniMessageHelper.deserialize(String.format("Merged <yellow>%s <white>members to Team %s", teamTwo.getMembers().size(), teamOne.getId())));
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
 
@@ -543,10 +554,10 @@ public class TeamCommand extends CommandAPICommand {
                                 TeamSetSpawnEvent teamSetSpawnEvent = new TeamSetSpawnEvent(team, player.getLocation());
                                 if (teamSetSpawnEvent.callEvent()) {
                                     team.setSpawnLocation(player.getLocation());
-                                    player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set your team's spawn location!"));
+                                    player.sendMessage(MiniMessageHelper.deserialize("<green>Successfully set your team's spawn location!"));
                                 }
                             } else {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>You must be a player to run this command!"));
+                                sender.sendMessage(MiniMessageHelper.deserialize("<red>You must be a player to run this command!"));
                             }
                         })
                 )
@@ -567,10 +578,10 @@ public class TeamCommand extends CommandAPICommand {
                                 TeamResetSpawnEvent teamResetSpawnEvent = new TeamResetSpawnEvent(team);
                                 if (teamResetSpawnEvent.callEvent()) {
                                     team.setSpawnLocation(null);
-                                    player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully reset your team's spawn location!"));
+                                    player.sendMessage(MiniMessageHelper.deserialize("<green>Successfully reset your team's spawn location!"));
                                 }
                             } else {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>You must be a player to run this command!"));
+                                sender.sendMessage(MiniMessageHelper.deserialize("<red>You must be a player to run this command!"));
                             }
                         }))
         );
@@ -599,7 +610,7 @@ public class TeamCommand extends CommandAPICommand {
                             if (!shouldForce && targetTeam != null) break;
                             if (targetTeam != null) targetTeam.removeMember(player.getUniqueId());
                             team.addMember(new TeamMember(player));
-                            player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
+                            player.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
                             playerIndex = (teamIdx + 1) % teamCount;
                             break;
                         }
@@ -639,7 +650,7 @@ public class TeamCommand extends CommandAPICommand {
                                     TeamChangeColorEvent teamChangeColorEvent = new TeamChangeColorEvent(team, oldTeamColor, newTeamColor);
                                     if (teamChangeColorEvent.callEvent()) {
                                         if (!newTeamColor.matches("^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
-                                            sender.sendMessage(MiniMessageUtil.deserialize("That color isn't a valid hex color!").color(NamedTextColor.RED));
+                                            sender.sendMessage(MiniMessageHelper.deserialize("That color isn't a valid hex color!").color(NamedTextColor.RED));
                                             return;
                                         }
 
@@ -648,11 +659,11 @@ public class TeamCommand extends CommandAPICommand {
                                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                             Player p = plugin.getServer().getPlayer(playerUniqueId);
                                             if (p != null)
-                                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <red><bold>TEAM COLOR CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team color to <%s>%s<gray>!\n ", sender.getName(), newTeamColor, newTeamColor)));
+                                                p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <red><bold>TEAM COLOR CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team color to <%s>%s<gray>!\n ", sender.getName(), newTeamColor, newTeamColor)));
                                         }
 
                                         team.setColor(newTeamColor);
-                                        sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed <%s>Team %s<white>'s color to <%s>%s!", team.getColor(), team.getId(), newTeamColor, newTeamColor)));
+                                        sender.sendMessage(MiniMessageHelper.deserialize(String.format("Successfully changed <%s>Team %s<white>'s color to <%s>%s!", team.getColor(), team.getId(), newTeamColor, newTeamColor)));
                                         if (plugin.config().getBoolean("automatic_updates", true))
                                             plugin.update();
 
@@ -681,11 +692,11 @@ public class TeamCommand extends CommandAPICommand {
                                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                             Player p = plugin.getServer().getPlayer(playerUniqueId);
                                             if (p != null)
-                                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <red><bold>TEAM NAME CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team name to <yellow>%s<gray>!\n ", sender.getName(), newTeamName)));
+                                                p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <red><bold>TEAM NAME CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team name to <yellow>%s<gray>!\n ", sender.getName(), newTeamName)));
                                         }
 
                                         team.setName(newTeamName);
-                                        sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed Team %s's name from %s<white> to <yellow>%s!", team.getId(), oldTeamName, newTeamName)));
+                                        sender.sendMessage(MiniMessageHelper.deserialize(String.format("Successfully changed Team %s's name from %s<white> to <yellow>%s!", team.getId(), oldTeamName, newTeamName)));
                                         plugin.update();
 
                                         if (sender instanceof Player player)
@@ -713,12 +724,12 @@ public class TeamCommand extends CommandAPICommand {
                                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                             Player p = plugin.getServer().getPlayer(playerUniqueId);
                                             if (p != null)
-                                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <red><bold>TEAM ID CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team id to <yellow>%s<gray>!\n ", sender.getName(), newTeamId)));
+                                                p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <red><bold>TEAM ID CHANGED\n  <reset><yellow>%s</yellow> <gray>has changed your team id to <yellow>%s<gray>!\n ", sender.getName(), newTeamId)));
                                         }
 
                                         team.setId(newTeamId);
                                         team.setName(newTeamId);
-                                        sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully changed the team with an id of %s<white> to <yellow>%s!", oldTeamId, newTeamId)));
+                                        sender.sendMessage(MiniMessageHelper.deserialize(String.format("Successfully changed the team with an id of %s<white> to <yellow>%s!", oldTeamId, newTeamId)));
                                         if (plugin.config().getBoolean("automatic_updates", true))
                                             plugin.update();
 
@@ -734,7 +745,7 @@ public class TeamCommand extends CommandAPICommand {
                         .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
                         .executes((sender, args) -> {
                             if (plugin.isTABPresent()) {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>This feature is not available with TAB!"));
+                                sender.sendMessage(MiniMessageHelper.deserialize("<red>This feature is not available with TAB!"));
                                 return;
                             }
 
@@ -746,14 +757,14 @@ public class TeamCommand extends CommandAPICommand {
                                 }
 
                                 if (args.get(1) instanceof String optionStatusName) {
-                                    org.bukkit.scoreboard.Team.OptionStatus status = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, optionStatusName);
+                                    org.bukkit.scoreboard.Team.OptionStatus status = EnumHelper.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, optionStatusName);
                                     if (status == null) {
-                                        sender.sendMessage(MiniMessageUtil.deserialize("<red>That option status isn't valid!"));
+                                        sender.sendMessage(MiniMessageHelper.deserialize("<red>That option status isn't valid!"));
                                         return;
                                     }
 
                                     team.setCollidable(status);
-                                    sender.sendMessage(MiniMessageUtil.deserialize("Collision rule for team \"%s\" is now \"%s\"", team.getId(), StringUtil.titleCase(status.name(), true)));
+                                    sender.sendMessage(MiniMessageHelper.deserialize(String.format("Collision rule for team \"%s\" is now \"%s\"", team.getId(), StringHelper.titleCase(status.name(), true))));
                                 }
                             }
                         })
@@ -771,7 +782,7 @@ public class TeamCommand extends CommandAPICommand {
 
                                 if (args.get(1) instanceof Boolean value) {
                                     team.setFriendlyFireAllowed(value);
-                                    sender.sendMessage(MiniMessageUtil.deserialize("%s friendly fire for team \"%s\"", value ? "Enabled" : "Disabled", team.getId()));
+                                    sender.sendMessage(MiniMessageHelper.deserialize(String.format("%s friendly fire for team \"%s\"", value ? "Enabled" : "Disabled", team.getId())));
                                 }
                             }
                         })
@@ -781,7 +792,7 @@ public class TeamCommand extends CommandAPICommand {
                         .withArguments(new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))), new StringArgument("value").replaceSuggestions(ArgumentSuggestions.strings(s -> Arrays.stream(org.bukkit.scoreboard.Team.OptionStatus.values()).map(org.bukkit.scoreboard.Team.OptionStatus::name).toArray(String[]::new))))
                         .executes((sender, args) -> {
                             if (plugin.isTABPresent()) {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>This feature is not available with TAB!"));
+                                sender.sendMessage(MiniMessageHelper.deserialize("<red>This feature is not available with TAB!"));
                                 return;
                             }
 
@@ -793,14 +804,14 @@ public class TeamCommand extends CommandAPICommand {
                                 }
 
                                 if (args.get(1) instanceof String optionStatusName) {
-                                    org.bukkit.scoreboard.Team.OptionStatus status = EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, optionStatusName);
+                                    org.bukkit.scoreboard.Team.OptionStatus status = EnumHelper.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, optionStatusName);
                                     if (status == null) {
-                                        sender.sendMessage(MiniMessageUtil.deserialize("<red>That option status isn't valid!"));
+                                        sender.sendMessage(MiniMessageHelper.deserialize("<red>That option status isn't valid!"));
                                         return;
                                     }
 
                                     team.setNameTagVisibility(status);
-                                    sender.sendMessage(MiniMessageUtil.deserialize("Nametag visibility for team \"%s\" is now \"%s\"", team.getId(), StringUtil.titleCase(status.name(), true)));
+                                    sender.sendMessage(MiniMessageHelper.deserialize(String.format("Nametag visibility for team \"%s\" is now \"%s\"", team.getId(), StringHelper.titleCase(status.name(), true))));
                                     if (plugin.config().getBoolean("automatic_updates", true))
                                         plugin.update();
                                 }
@@ -811,7 +822,7 @@ public class TeamCommand extends CommandAPICommand {
         withSubcommand(new CommandAPICommand("place")
                 .withAliases("add")
                 .withPermission(convertPermission(plugin.config().getString("commands.place", null)))
-                .withArguments(new PlayerArgument("target"), new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
+                .withArguments(new EntitySelectorArgument.OnePlayer("target"), new StringArgument("team_id").replaceSuggestions(ArgumentSuggestions.strings(s -> plugin.getTeams().stream().map(ITeam::getId).toArray(String[]::new))))
                 .executes((sender, args) -> {
                     if (args.get(0) instanceof Player target) {
                         if (args.get(1) instanceof String targetTeam) {
@@ -822,11 +833,11 @@ public class TeamCommand extends CommandAPICommand {
                             }
 
                             if (team.containsMember(target.getUniqueId())) {
-                                sender.sendMessage(MiniMessageUtil.deserialize("<red>%s is already in that team!", target.getName()));
+                                sender.sendMessage(MiniMessageHelper.deserialize(String.format("<red>%s is already in that team!", target.getName())));
                                 return;
                             }
 
-                            TeamJoinEvent joinEvent = new TeamJoinEvent(team, target);
+                            TeamJoinByPlaceEvent joinEvent = new TeamJoinByPlaceEvent(team, target);
                             if (joinEvent.callEvent()) {
                                 ITeam previousTeam = plugin.getTeam(target.getUniqueId());
                                 if (previousTeam != null) previousTeam.removeMember(target.getUniqueId());
@@ -835,10 +846,10 @@ public class TeamCommand extends CommandAPICommand {
                                 for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                     Player p = plugin.getServer().getPlayer(playerUniqueId);
                                     if (p != null)
-                                        p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", target.getName())));
+                                        p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", target.getName())));
                                 }
 
-                                sender.sendMessage(MiniMessageUtil.deserialize(String.format("Added <yellow>%s <white>to <%s>Team %s", target.getName(), team.getColor(), team.getId())));
+                                sender.sendMessage(MiniMessageHelper.deserialize(String.format("Added <yellow>%s <white>to <%s>Team %s", target.getName(), team.getColor(), team.getId())));
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
 
@@ -851,9 +862,15 @@ public class TeamCommand extends CommandAPICommand {
         );
         withSubcommand(new CommandAPICommand("remove")
                 .withPermission(convertPermission(plugin.config().getString("commands.remove", null)))
-                .withArguments(new OfflinePlayerArgument("target"))
+                .withArguments(new PlayerProfileArgument("target"))
                 .executes((sender, args) -> {
-                    if (args.get(0) instanceof OfflinePlayer target) {
+                    if (args.get(0) instanceof List<?> l) {
+                        OfflinePlayer target = CommandHelper.convertPlayerProfileToOfflinePlayer((List<PlayerProfile>) l);
+                        if (target == null || target.getName() == null) {
+                            sender.sendMessage(MiniMessageHelper.deserialize("<red>That player is not online"));
+                            return;
+                        }
+
                         ITeam team = plugin.getTeam(target.getUniqueId());
                         if (team == null) {
                             sender.sendMessage(Component.text("That player doesn't have a team!").color(NamedTextColor.RED));
@@ -865,13 +882,13 @@ public class TeamCommand extends CommandAPICommand {
                             for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                                 Player p = plugin.getServer().getPlayer(playerUniqueId);
                                 if (p != null)
-                                    p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <red><bold>PLAYER REMOVED\n  <reset><yellow>%s</yellow> <gray>has been removed from your team!\n ", target.getName())));
+                                    p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <red><bold>PLAYER REMOVED\n  <reset><yellow>%s</yellow> <gray>has been removed from your team!\n ", target.getName())));
                             }
 
                             new TeamLeaveEvent(target, team).callEvent();
                             team.removeMember(target.getUniqueId());
 
-                            sender.sendMessage(MiniMessageUtil.deserialize(String.format("Removed <yellow>%s <white>from <%s>Team %s", target.getName(), team.getColor(), team.getId())));
+                            sender.sendMessage(MiniMessageHelper.deserialize(String.format("Removed <yellow>%s <white>from <%s>Team %s", target.getName(), team.getColor(), team.getId())));
                             if (plugin.config().getBoolean("automatic_updates", true))
                                 plugin.update();
 
@@ -895,7 +912,7 @@ public class TeamCommand extends CommandAPICommand {
                         for (UUID playerUniqueId : team.getMembers().stream().map(ITeamMember::getUniqueId).toList()) {
                             Player p = plugin.getServer().getPlayer(playerUniqueId);
                             if (p != null)
-                                p.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <red><bold>TEAM DELETED\n  <reset><yellow>%s</yellow> <gray>has deleted your team!\n ", sender.getName())));
+                                p.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <red><bold>TEAM DELETED\n  <reset><yellow>%s</yellow> <gray>has deleted your team!\n ", sender.getName())));
                         }
 
                         plugin.deleteTeam(team);
@@ -905,7 +922,7 @@ public class TeamCommand extends CommandAPICommand {
                         if (sender instanceof Player player)
                             CommandAPI.updateRequirements(player);
 
-                        sender.sendMessage(MiniMessageUtil.deserialize(String.format("Successfully deleted <%s>Team %s<white>!", team.getColor(), team.getId())));
+                        sender.sendMessage(MiniMessageHelper.deserialize(String.format("Successfully deleted <%s>Team %s<white>!", team.getColor(), team.getId())));
                     }
                 })
         );
@@ -913,7 +930,7 @@ public class TeamCommand extends CommandAPICommand {
                 .withPermission(convertPermission(plugin.config().getString("commands.list", null)))
                 .executesPlayer((player, args) -> {
                     if (plugin.getTeams().size() == 0) {
-                        player.sendMessage(MiniMessageUtil.deserialize("<red>There are no teams to display!"));
+                        player.sendMessage(MiniMessageHelper.deserialize("<red>There are no teams to display!"));
                         return;
                     }
 
@@ -930,33 +947,33 @@ public class TeamCommand extends CommandAPICommand {
     }
 
     private void executeHelpCommand(CommandSender sender, CommandArguments args) {
-        sender.sendMessage(MiniMessageUtil.deserialize(" "));
-        sender.sendMessage(MiniMessageUtil.deserialize("<bold>Team Commands"));
-        sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team create><hover:show_text:\"<yellow>Click to create a team!\">/team create</hover></click>"));
-        sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team join>/team join</click></yellow>"));
-        sender.sendMessage(MiniMessageUtil.deserialize("To view the full list of teams, you can use <yellow><click:run_command:/team list><hover:show_text:\"<yellow>Click to view the list of teams!\">/team list</hover></click>"));
-        sender.sendMessage(MiniMessageUtil.deserialize(" "));
-        sender.sendMessage(MiniMessageUtil.deserialize("<bold>Member Commands"));
-        sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team leave><hover:show_text:\"<yellow>Click to leave your team!\">/team leave</hover></click></yellow>"));
-        sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team invite>/team invite</click></yellow>"));
-        sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/tc>/tc <msg></click></yellow> or use <yellow><click:suggest_command:/team chat>/team chat</click></yellow> to toggle."));
-        sender.sendMessage(MiniMessageUtil.deserialize(" "));
-        sender.sendMessage(MiniMessageUtil.deserialize("<bold>Leader Commands"));
-        sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team kick>/team click</click></yellow>"));
-        sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team disband><hover:show_text:\"<yellow>Click to disband your team!\">/team disband</hover></click>"));
+        sender.sendMessage(MiniMessageHelper.deserialize(" "));
+        sender.sendMessage(MiniMessageHelper.deserialize("<bold>Team Commands"));
+        sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team create><hover:show_text:\"<yellow>Click to create a team!\">/team create</hover></click>"));
+        sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team join>/team join</click></yellow>"));
+        sender.sendMessage(MiniMessageHelper.deserialize("To view the full list of teams, you can use <yellow><click:run_command:/team list><hover:show_text:\"<yellow>Click to view the list of teams!\">/team list</hover></click>"));
+        sender.sendMessage(MiniMessageHelper.deserialize(" "));
+        sender.sendMessage(MiniMessageHelper.deserialize("<bold>Member Commands"));
+        sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team leave><hover:show_text:\"<yellow>Click to leave your team!\">/team leave</hover></click></yellow>"));
+        sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team invite>/team invite</click></yellow>"));
+        sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/tc>/tc <msg></click></yellow> or use <yellow><click:suggest_command:/team chat>/team chat</click></yellow> to toggle."));
+        sender.sendMessage(MiniMessageHelper.deserialize(" "));
+        sender.sendMessage(MiniMessageHelper.deserialize("<bold>Leader Commands"));
+        sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team kick>/team click</click></yellow>"));
+        sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team disband><hover:show_text:\"<yellow>Click to disband your team!\">/team disband</hover></click>"));
         if (sender.hasPermission("lodestone.lead.manage")) {
-            sender.sendMessage(MiniMessageUtil.deserialize(" "));
-            sender.sendMessage(MiniMessageUtil.deserialize("<bold>Admin Commands"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team merge>/team merge <team_one_id> <team_two_id></click></yellow>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team place>/team place <player> <team_id></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team remove>/team remove <player></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team delete>/team delete <team_id></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify color>/team modify color <team_id> <new_color></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify display_name>/team modify display_name <team_id> <display_name></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify collidable>/team modify collidable <team_id> <value></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify name_tag>/team modify name_tag <team_id> <value></click>"));
-            sender.sendMessage(MiniMessageUtil.deserialize("- <yellow><click:suggest_command:/team modify friendly_fire>/team modify friendly_fire <team_id> <value></click>"));
+            sender.sendMessage(MiniMessageHelper.deserialize(" "));
+            sender.sendMessage(MiniMessageHelper.deserialize("<bold>Admin Commands"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team merge>/team merge <team_one_id> <team_two_id></click></yellow>"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team place>/team place <player> <team_id></click>"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team remove>/team remove <player></click>"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team delete>/team delete <team_id></click>"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team modify color>/team modify color <team_id> <new_color></click>"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team modify display_name>/team modify display_name <team_id> <display_name></click>"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team modify collidable>/team modify collidable <team_id> <value></click>"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team modify name_tag>/team modify name_tag <team_id> <value></click>"));
+            sender.sendMessage(MiniMessageHelper.deserialize("- <yellow><click:suggest_command:/team modify friendly_fire>/team modify friendly_fire <team_id> <value></click>"));
         }
-        sender.sendMessage(MiniMessageUtil.deserialize(" "));
+        sender.sendMessage(MiniMessageHelper.deserialize(" "));
     }
 }
