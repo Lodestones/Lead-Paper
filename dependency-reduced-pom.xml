@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>gg.lode</groupId>
-  <artifactId>Lead-Paper</artifactId>
-  <name>Lead-Paper</name>
-  <version>1.2.5</version>
-  <description>A lightweight plugin that creates visual teams showcased in Civilization, Battle Royale, or SMP events.
-  </description>
-  <url>https://lode.gg</url>
-  <build>
-    <resources>
-      <resource>
-        <filtering>true</filtering>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>gg.lode</groupId>
+    <artifactId>Lead-Paper</artifactId>
+    <name>Lead-Paper</name>
+    <version>1.2.51</version>
+    <description>A lightweight plugin that creates visual teams showcased in Civilization, Battle Royale, or SMP
+        events.
+    </description>
+    <url>https://lode.gg</url>
+    <build>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
@@ -34,18 +35,29 @@
             <goals>
               <goal>shade</goal>
             </goals>
-            <configuration>
-              <relocations>
-                <relocation>
-                  <pattern>dev.jorel.commandapi</pattern>
-                  <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
+              <configuration>
+                  <relocations>
+                      <relocation>
+                          <pattern>dev.jorel.commandapi</pattern>
+                          <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
+                      </relocation>
+                  </relocations>
+              </configuration>
           </execution>
         </executions>
       </plugin>
-    </plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <paperweight-mappings-namespace>mojang</paperweight-mappings-namespace>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
   </build>
   <repositories>
     <repository>
@@ -68,7 +80,7 @@
       <releases>
         <enabled>false</enabled>
       </releases>
-      <snapshots/>
+        <snapshots/>
       <id>central-portal-snapshots</id>
       <name>Central Portal Snapshots</name>
       <url>https://central.sonatype.com/repository/maven-snapshots/</url>
@@ -78,7 +90,7 @@
     <dependency>
       <groupId>gg.lode</groupId>
       <artifactId>Bookshelf-Events</artifactId>
-      <version>1.0.0</version>
+        <version>1.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

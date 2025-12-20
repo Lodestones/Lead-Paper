@@ -3,8 +3,8 @@ package gg.lode.lead.menu;
 import gg.lode.bookshelfapi.api.menu.Menu;
 import gg.lode.bookshelfapi.api.menu.build.MenuBuilder;
 import gg.lode.bookshelfapi.api.menu.build.TopMenuBuilder;
-import gg.lode.bookshelfapi.api.util.ArrayUtil;
-import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.ArrayHelper;
+import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import gg.lode.leadapi.api.ITeamMember;
@@ -57,17 +57,17 @@ public class TeamListMenu extends Menu {
                 .outline(pane)
                 .addClickAction(e -> e.setCancelled(true));
 
-        List<List<ITeam>> chunkedPages = ArrayUtil.chunk(teams, 7 * 4);
+        List<List<ITeam>> chunkedPages = ArrayHelper.chunk(teams, 7 * 4);
         List<ITeam> currentPage = chunkedPages.get(page);
 
         ItemStack goBack = new ItemStack(Material.ARROW);
-        goBack.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageUtil.deserialize("<green>Go Back").decoration(TextDecoration.ITALIC, false)));
+        goBack.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize("<green>Go Back").decoration(TextDecoration.ITALIC, false)));
 
         ItemStack goForward = new ItemStack(Material.ARROW);
-        goForward.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageUtil.deserialize("<green>Go Forward").decoration(TextDecoration.ITALIC, false)));
+        goForward.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize("<green>Go Forward").decoration(TextDecoration.ITALIC, false)));
 
         ItemStack back = new ItemStack(Material.BARRIER);
-        back.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageUtil.deserialize("<reset><red>Back").decoration(TextDecoration.ITALIC, false)));
+        back.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize("<reset><red>Back").decoration(TextDecoration.ITALIC, false)));
 
         builder.editRow(0,
                 rowBuilder -> rowBuilder.setSlot(0, back,
@@ -88,7 +88,7 @@ public class TeamListMenu extends Menu {
 
             ItemStack listHead = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) listHead.getItemMeta();
-            meta.displayName(MiniMessageUtil.deserialize(String.format("<reset><font:%s><%s>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName())).decoration(TextDecoration.ITALIC, false));
+            meta.displayName(MiniMessageHelper.deserialize(String.format("<reset><font:%s><%s>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName())).decoration(TextDecoration.ITALIC, false));
             List<Component> lores = new ArrayList<>();
             List<ITeamMember> members = new ArrayList<>(team.getMembers());
             members.sort((a, b) -> {
@@ -98,7 +98,7 @@ public class TeamListMenu extends Menu {
             });
 
             for (ITeamMember teamMember : members)
-                lores.add(MiniMessageUtil.deserialize(String.format("<reset><white>- <yellow>%s", teamMember.getName())).decoration(TextDecoration.ITALIC, false));
+                lores.add(MiniMessageHelper.deserialize(String.format("<reset><white>- <yellow>%s", teamMember.getName())).decoration(TextDecoration.ITALIC, false));
             meta.lore(lores);
             if (team.getLeaderUniqueId() != null && team.containsMember(team.getLeaderUniqueId())) {
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(team.getLeaderUniqueId());

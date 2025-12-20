@@ -1,7 +1,7 @@
 package gg.lode.lead.listener;
 
 import gg.lode.bookshelfapi.api.Task;
-import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import org.bukkit.Bukkit;
@@ -44,7 +44,7 @@ public class PlayerListener implements Listener {
                 player.teleport(team.getSpawnLocation());
             }
 
-            player.sendMessage(MiniMessageUtil.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
+            player.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
         }
     }
 

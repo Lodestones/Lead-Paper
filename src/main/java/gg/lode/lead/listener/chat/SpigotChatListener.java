@@ -1,6 +1,6 @@
 package gg.lode.lead.listener.chat;
 
-import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
 import gg.lode.bookshelfapi.api.util.VariableContext;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
@@ -47,20 +47,20 @@ public class SpigotChatListener implements Listener {
             ctx.set("teamName", teamName);
             ctx.set("teamColor", teamColor);
             ctx.set("playerName", playerName);
-            ctx.set("message", MiniMessageUtil.serialize(event.message()));
+            ctx.set("message", MiniMessageHelper.serialize(event.message()));
             ctx.set("messageColor", teamMember.isInTeamChat() ? "#FFFFFF" : teamColor);
             ctx.set("colorNames", colorNames ? String.format("<%s>", teamColor) : "<reset>");
 
             if (teamMember.isInTeamChat()) {
                 // Team Chat prefix and message color
-                Component prefix = MiniMessageUtil.deserialize("<green><bold>TEAM » ");
+                Component prefix = MiniMessageHelper.deserialize("<green><bold>TEAM » ");
                 Component teamLabel = ctx.replaceAsComponent("<reset><font:<font>><<teamColor>><teamName></font><<teamColor>> ");
                 Component messageColor = ctx.replaceAsComponent("<playerName>: <message>");
 
                 for (ITeamMember member : team.getMembers()) {
                     Player memberPlayer = plugin.getServer().getPlayer(member.getUniqueId());
                     if (memberPlayer != null) {
-                        Component messageToSend = MiniMessageUtil.persistStyle(prefix, teamLabel).append(messageColor);
+                        Component messageToSend = MiniMessageHelper.persistStyle(prefix, teamLabel).append(messageColor);
                         memberPlayer.sendMessage(messageToSend);
                     }
                 }
@@ -80,7 +80,7 @@ public class SpigotChatListener implements Listener {
         }
 
         // Default global message for non-teamed players
-        Component messageToSend = MiniMessageUtil.deserialize("<gray>%s: %s", playerName, MiniMessageUtil.serialize(event.message()));
+        Component messageToSend = MiniMessageHelper.deserialize(String.format("<gray>%s: %s", playerName, MiniMessageHelper.serialize(event.message())));
         Bukkit.broadcast(messageToSend);
     }
 

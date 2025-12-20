@@ -2,7 +2,7 @@ package gg.lode.lead.command;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
-import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
 import gg.lode.bookshelfapi.api.util.VariableContext;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
@@ -21,7 +21,7 @@ public class TeamMessageCommand extends CommandAPICommand {
         executesPlayer((player, args) -> {
             ITeam team = plugin.getTeam(player.getUniqueId());
             if (team == null) {
-                player.sendMessage(MiniMessageUtil.deserialize("<red>You are not in a team!"));
+                player.sendMessage(MiniMessageHelper.deserialize("<red>You are not in a team!"));
                 return;
             }
 
@@ -38,14 +38,14 @@ public class TeamMessageCommand extends CommandAPICommand {
                 ctx.set("messageColor", "#FFFFFF");
                 ctx.set("colorNames", colorNames ? String.format("<%s>", team.getColor()) : "<reset>");
 
-                Component prefix = MiniMessageUtil.deserialize("<green><bold>TEAM » ");
+                Component prefix = MiniMessageHelper.deserialize("<green><bold>TEAM » ");
                 Component teamLabel = ctx.replaceAsComponent("<reset><font:<font>><<teamColor>><teamName></font><colorNames> ");
                 Component messageColor = ctx.replaceAsComponent("<playerName>: <message>");
 
                 for (ITeamMember member : team.getMembers()) {
                     Player memberPlayer = plugin.getServer().getPlayer(member.getUniqueId());
                     if (memberPlayer != null) {
-                        Component messageToSend = MiniMessageUtil.persistStyle(prefix, teamLabel).append(messageColor);
+                        Component messageToSend = MiniMessageHelper.persistStyle(prefix, teamLabel).append(messageColor);
                         memberPlayer.sendMessage(messageToSend);
                     }
                 }

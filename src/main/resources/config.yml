@@ -1,7 +1,10 @@
-version: 13
+version: 14
 
 # If verbose is true, the plugin will output more information to the console/admins.
 verbose: false
+
+# Should Lead use prefix or suffix? (PREFIX or SUFFIX)
+team_alignment: PREFIX
 
 # Maximum amount of players that can be added to a team.
 max_team_size: 5

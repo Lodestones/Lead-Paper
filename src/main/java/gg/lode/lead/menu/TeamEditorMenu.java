@@ -2,12 +2,13 @@ package gg.lode.lead.menu;
 
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
+import de.rapha149.signgui.exception.SignGUIVersionException;
 import gg.lode.bookshelfapi.api.Task;
 import gg.lode.bookshelfapi.api.item.ItemBuilder;
 import gg.lode.bookshelfapi.api.menu.Menu;
 import gg.lode.bookshelfapi.api.menu.build.MenuBuilder;
 import gg.lode.bookshelfapi.api.menu.build.TopMenuBuilder;
-import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import org.bukkit.Color;
@@ -39,64 +40,72 @@ public class TeamEditorMenu extends Menu {
         return builder
                 .setRows(3)
                 .outline(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).title("").build())
-                .setTitle("Editing: Team %s", team.getName())
+                .setTitle(String.format("Editing: Team %s", team.getName()))
                 .editRow(1, rowBuilder -> {
                     rowBuilder
                             .setSlot(1, new ItemBuilder(Material.PAPER).title("Id").lore(String.format("<gray>Currently: <white>%s", team.getId())).build(), event -> {
                                 event.setCancelled(true);
-                                SignGUI.builder()
-                                        .setLines("", "^^^^^^^^^^^^", "Enter a new", "team id")
-                                        .setType(Material.OAK_SIGN)
-                                        .setColor(DyeColor.BLACK)
-                                        .setHandler((p, result) -> {
-                                            String input = result.getLineWithoutColor(0);
+                                try {
+                                    SignGUI.builder()
+                                            .setLines("", "^^^^^^^^^^^^", "Enter a new", "team id")
+                                            .setType(Material.OAK_SIGN)
+                                            .setColor(DyeColor.BLACK)
+                                            .setHandler((p, result) -> {
+                                                String input = result.getLineWithoutColor(0);
 
-                                            if (input.isEmpty()) {
-                                                // The user has not entered anything on line 2, so we open the sign again
-                                                return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", "Enter a new", "team id"));
-                                            }
+                                                if (input.isEmpty()) {
+                                                    // The user has not entered anything on line 2, so we open the sign again
+                                                    return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", "Enter a new", "team id"));
+                                                }
 
-                                            if (input.matches("[a-zA-Z0-9_]+")) {
-                                                team.setId(input);
-                                                if (plugin.config().getBoolean("automatic_updates", true))
-                                                    plugin.update();
-                                                player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set the team id to %s.", team.getId()));
-                                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                                                Task.later(plugin, this::update, 1);
-                                            } else {
-                                                player.sendMessage(MiniMessageUtil.deserialize("<red>Please input a valid team id."));
-                                            }
+                                                if (input.matches("[a-zA-Z0-9_]+")) {
+                                                    team.setId(input);
+                                                    if (plugin.config().getBoolean("automatic_updates", true))
+                                                        plugin.update();
+                                                    player.sendMessage(MiniMessageHelper.deserialize(String.format("<green>Successfully set the team id to %s.", team.getId())));
+                                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
+                                                    Task.later(plugin, this::update, 1);
+                                                } else {
+                                                    player.sendMessage(MiniMessageHelper.deserialize("<red>Please input a valid team id."));
+                                                }
 
-                                            return Collections.emptyList();
-                                        })
-                                        .build()
-                                        .open(player);
+                                                return Collections.emptyList();
+                                            })
+                                            .build()
+                                            .open(player);
+                                } catch (SignGUIVersionException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                             })
                             .setSlot(2, new ItemBuilder(Material.NAME_TAG).title("Display Name").lore(String.format("<gray>Currently: <white>%s", team.getName())).build(), event -> {
                                 event.setCancelled(true);
-                                SignGUI.builder()
-                                        .setLines("", "^^^^^^^^^^^^", "Enter a new", "display name")
-                                        .setType(Material.OAK_SIGN)
-                                        .setColor(DyeColor.BLACK)
-                                        .setHandler((p, result) -> {
-                                            String input = result.getLineWithoutColor(0);
+                                try {
+                                    SignGUI.builder()
+                                            .setLines("", "^^^^^^^^^^^^", "Enter a new", "display name")
+                                            .setType(Material.OAK_SIGN)
+                                            .setColor(DyeColor.BLACK)
+                                            .setHandler((p, result) -> {
+                                                String input = result.getLineWithoutColor(0);
 
-                                            if (input.isEmpty()) {
-                                                // The user has not entered anything on line 2, so we open the sign again
-                                                return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", "Enter a new", "display name"));
-                                            }
+                                                if (input.isEmpty()) {
+                                                    // The user has not entered anything on line 2, so we open the sign again
+                                                    return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", "Enter a new", "display name"));
+                                                }
 
-                                            team.setName(input);
-                                            if (plugin.config().getBoolean("automatic_updates", true))
-                                                plugin.update();
-                                            player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set the team name to %s.", team.getName()));
-                                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                                            Task.later(plugin, () -> new TeamEditorMenu(plugin, player, team).open(), 1);
-                                            return Collections.emptyList();
-                                        })
-                                        .build()
-                                        .open(player);
+                                                team.setName(input);
+                                                if (plugin.config().getBoolean("automatic_updates", true))
+                                                    plugin.update();
+                                                player.sendMessage(MiniMessageHelper.deserialize(String.format("<green>Successfully set the team name to %s.", team.getName())));
+                                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
+                                                Task.later(plugin, () -> new TeamEditorMenu(plugin, player, team).open(), 1);
+                                                return Collections.emptyList();
+                                            })
+                                            .build()
+                                            .open(player);
+                                } catch (SignGUIVersionException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                             })
                             .setSlot(3, new ItemBuilder(Material.GLASS).title("Collidable").lore(String.format("<gray>Currently: <white>%s", team.getCollidable().name())).build(), event -> {
@@ -127,35 +136,39 @@ public class TeamEditorMenu extends Menu {
                             })
                             .setSlot(6, new ItemBuilder(Material.WHITE_WOOL).title("Color").lore(String.format("<gray>Currently: <white>%s", team.getColor())).build(), event -> {
                                 event.setCancelled(true);
-                                SignGUI.builder()
-                                        .setLines("", "^^^^^^^^^^^^", "Enter a valid", "hex color")
-                                        .setType(Material.OAK_SIGN)
-                                        .setColor(DyeColor.BLACK)
-                                        .setHandler((p, result) -> {
-                                            String input = result.getLineWithoutColor(0);
+                                try {
+                                    SignGUI.builder()
+                                            .setLines("", "^^^^^^^^^^^^", "Enter a valid", "hex color")
+                                            .setType(Material.OAK_SIGN)
+                                            .setColor(DyeColor.BLACK)
+                                            .setHandler((p, result) -> {
+                                                String input = result.getLineWithoutColor(0);
 
-                                            if (input.isEmpty()) {
-                                                // The user has not entered anything on line 2, so we open the sign again
-                                                return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", "Enter a valid", "hex color"));
-                                            }
+                                                if (input.isEmpty()) {
+                                                    // The user has not entered anything on line 2, so we open the sign again
+                                                    return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", "Enter a valid", "hex color"));
+                                                }
 
-                                            if (input.matches("^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
-                                                if (!input.startsWith("#")) input = "#" + input;
+                                                if (input.matches("^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")) {
+                                                    if (!input.startsWith("#")) input = "#" + input;
 
-                                                team.setColor(input);
-                                                if (plugin.config().getBoolean("automatic_updates", true))
-                                                    plugin.update();
-                                                player.sendMessage(MiniMessageUtil.deserialize("<green>Successfully set the team color to <%s>%s.", team.getColor(), team.getColor()));
-                                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                                                Task.later(plugin, this::update, 1);
-                                            } else {
-                                                player.sendMessage(MiniMessageUtil.deserialize("<red>Please input a valid hex color."));
-                                            }
+                                                    team.setColor(input);
+                                                    if (plugin.config().getBoolean("automatic_updates", true))
+                                                        plugin.update();
+                                                    player.sendMessage(MiniMessageHelper.deserialize(String.format("<green>Successfully set the team color to <%s>%s.", team.getColor(), team.getColor())));
+                                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
+                                                    Task.later(plugin, this::update, 1);
+                                                } else {
+                                                    player.sendMessage(MiniMessageHelper.deserialize("<red>Please input a valid hex color."));
+                                                }
 
-                                            return Collections.emptyList();
-                                        })
-                                        .build()
-                                        .open(player);
+                                                return Collections.emptyList();
+                                            })
+                                            .build()
+                                            .open(player);
+                                } catch (SignGUIVersionException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                             })
                             .setSlot(7, new ItemBuilder(Material.BEDROCK).title("Coming Soon").lore("<gray>Reserved for future updates.").build(), event -> {

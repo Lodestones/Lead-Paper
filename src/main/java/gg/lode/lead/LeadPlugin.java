@@ -1,14 +1,14 @@
 package gg.lode.lead;
 
 import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.jorel.commandapi.CommandAPIPaperConfig;
 import gg.lode.bookshelfapi.BookshelfAPI;
 import gg.lode.bookshelfapi.api.Configuration;
 import gg.lode.bookshelfapi.api.Task;
 import gg.lode.bookshelfapi.api.VersionUpdater;
-import gg.lode.bookshelfapi.api.util.EnumUtil;
+import gg.lode.bookshelfapi.api.util.EnumHelper;
 import gg.lode.bookshelfapi.api.util.Metrics;
-import gg.lode.bookshelfapi.api.util.MiniMessageUtil;
+import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
 import gg.lode.lead.command.LeadCommand;
 import gg.lode.lead.command.TeamCommand;
 import gg.lode.lead.command.TeamMessageCommand;
@@ -17,6 +17,7 @@ import gg.lode.lead.listener.WorldListener;
 import gg.lode.lead.listener.chat.BookshelfChatListener;
 import gg.lode.lead.listener.chat.SpigotChatListener;
 import gg.lode.lead.team.Team;
+import gg.lode.lead.team.TeamAlignment;
 import gg.lode.lead.team.TeamMember;
 import gg.lode.leadapi.ILeadAPI;
 import gg.lode.leadapi.LeadAPI;
@@ -52,8 +53,8 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.5";
-    private static final int CONFIG_VERSION = 13;
+    public static final String VERSION = "v1.2.51";
+    private static final int CONFIG_VERSION = 14;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
@@ -67,7 +68,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).setNamespace("minecraft").shouldHookPaperReload(true));
+        CommandAPI.onLoad(new CommandAPIPaperConfig(this).silentLogs(true).setNamespace("minecraft").fallbackToLatestNMS(true));
 
         this.team = new Configuration(this, "teams.yml");
         this.team.initialize();
@@ -85,10 +86,13 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private void updateConfigToLatest() {
         if (config.getInt("version") < CONFIG_VERSION) {
             getLogger().info("Updating configuration to the latest version...");
-            if (config.getInt("version") == 12) {
-                config.set("nameable_teams", true);
-                config.set("minimum_team_name_length", 3);
-                config.set("maximum_team_name_length", 16);
+            switch (config.getInt("version")) {
+                case 12 -> {
+                    config.set("nameable_teams", true);
+                    config.set("maximum_team_name_length", 16);
+                    config.set("minimum_team_name_length", 3);
+                }
+                case 13 -> config.set("team_alignment", TeamAlignment.PREFIX.name());
             }
 
             // Recursively call this method to ensure all updates are applied
@@ -156,13 +160,14 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 e.printStackTrace();
             }
         } else {
-            getLogger().warning("==========================================");
-            getLogger().warning("TAB is not installed!");
-            getLogger().warning("It's okay, Lead will continue to function as best as it can.");
-            getLogger().warning("Unfortunately, if you do intend on using Lead for mass players/teams,");
-            getLogger().warning("I highly recommend installing TAB to remove all of the bugs that come with the vanilla team API.");
-            getLogger().warning("https://modrinth.com/plugin/tab-was-taken");
-            getLogger().warning("==========================================");
+            getLogger().severe("==========================================");
+            getLogger().severe("TAB is not installed!");
+            getLogger().severe("It's okay, Lead will continue to function as best as it can.");
+            getLogger().severe(" ");
+            getLogger().severe("However, if you do intend on using Lead for a large amount of players,");
+            getLogger().severe("I highly recommend installing TAB to remove all of the bugs that come with the vanilla team API.");
+            getLogger().severe("https://modrinth.com/plugin/tab-was-taken");
+            getLogger().severe("==========================================");
         }
     }
 
@@ -256,16 +261,26 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                             String fontToUse = config().getString("font", "default");
 //                        Objects.requireNonNull(tabApiInstance.getSortingManager()).forceTeamName(onlinePlayer, team.getId().substring(0, Math.min(16, team.getId().length())));
 
+                            TeamAlignment alignment = EnumHelper.fetchEnum(TeamAlignment.class, config().getString("team_alignment"), TeamAlignment.PREFIX);
+
                             String formattedPrefix = String.format(
                                     "<font:%s><%s>%s</font>%s",
                                     fontToUse,
                                     team.getColor(),
                                     team.getName(),
-                                    team.getName().isEmpty() ? "" : String.format("<%s> ", config().getBoolean("color_names", false) ? team.getColor() : "white")
+                                    team.getName().isEmpty() ? "" : String.format((alignment == TeamAlignment.SUFFIX ? " " : "") + ("<%s>") + (alignment == TeamAlignment.PREFIX ? " " : ""), config().getBoolean("color_names", false) ? team.getColor() : "white")
                             );
 
-                            Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, formattedPrefix);
-                            Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, formattedPrefix);
+                            switch (alignment) {
+                                case SUFFIX -> {
+                                    Objects.requireNonNull(tabApiInstance.getNameTagManager()).setSuffix(onlinePlayer, formattedPrefix);
+                                    Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setSuffix(onlinePlayer, formattedPrefix);
+                                }
+                                case PREFIX -> {
+                                    Objects.requireNonNull(tabApiInstance.getNameTagManager()).setPrefix(onlinePlayer, formattedPrefix);
+                                    Objects.requireNonNull(tabApiInstance.getTabListFormatManager()).setPrefix(onlinePlayer, formattedPrefix);
+                                }
+                            }
                         }
                     } catch (Exception err) {
                         err.printStackTrace();
@@ -278,7 +293,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         org.bukkit.scoreboard.Team remainingTeam = scoreboard.getTeam(TEAMLESS_ID);
                         if (remainingTeam == null) {
                             if (config().getBoolean("verbose"))
-                                Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating the remaining team.]"), "lead.debug");
+                                Bukkit.broadcast(MiniMessageHelper.deserialize("<gray><italic>[Lead: Creating the remaining team.]"), "lead.debug");
                             remainingTeam = scoreboard.registerNewTeam(TEAMLESS_ID);
                         }
 
@@ -290,7 +305,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         for (Player player : getServer().getOnlinePlayers().stream().filter(player -> hasTeam(player.getUniqueId())).toList()) {
                             if (remainingTeam.hasEntry(player.getName())) {
                                 if (config().getBoolean("verbose"))
-                                    Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from the remaining team.]", player.getName()), "lead.debug");
+                                    Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Removing %s from the remaining team.]", player.getName())), "lead.debug");
                                 remainingTeam.removeEntry(player.getName());
                             }
                         }
@@ -301,7 +316,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                                 continue;
 
                             if (config().getBoolean("verbose"))
-                                Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing scoreboard team named %s.]", bukkitTeam.getName()), "lead.debug");
+                                Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Removing scoreboard team named %s.]", bukkitTeam.getName())), "lead.debug");
 
                             bukkitTeam.unregister();
                         }
@@ -310,7 +325,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         for (ITeam team : getTeams().stream().filter(leadTeam -> scoreboard.getTeams().stream().noneMatch(bukkitTeam -> bukkitTeam.getName().equals(leadTeam.getId()))).toList()) {
                             Objects.requireNonNull(team.getId());
                             if (config().getBoolean("verbose"))
-                                Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Creating scoreboard team named %s.]", team.getId()), "lead.debug");
+                                Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Creating scoreboard team named %s.]", team.getId())), "lead.debug");
 
                             if (scoreboard.getTeam(team.getId()) == null)
                                 scoreboard.registerNewTeam(team.getId());
@@ -321,8 +336,17 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                             Objects.requireNonNull(team.getName());
 
                             @NotNull org.bukkit.scoreboard.Team bukkitTeam = Objects.requireNonNull(scoreboard.getTeam(team.getId()));
-                            bukkitTeam.prefix(MiniMessageUtil.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
-                            bukkitTeam.suffix(Component.empty());
+                            switch (EnumHelper.fetchEnum(TeamAlignment.class, config().getString("team_alignment"), TeamAlignment.PREFIX)) {
+                                case PREFIX -> {
+                                    bukkitTeam.prefix(MiniMessageHelper.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
+                                    bukkitTeam.suffix(Component.empty());
+                                }
+                                case SUFFIX -> {
+                                    bukkitTeam.suffix(MiniMessageHelper.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
+                                    bukkitTeam.prefix(Component.empty());
+                                }
+                            }
+
                             bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, team.getCollidable());
                             bukkitTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, team.getNameTagVisibility());
                             bukkitTeam.setAllowFriendlyFire(team.isFriendlyFireAllowed());
@@ -334,7 +358,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                                     Player player = Bukkit.getPlayerExact(bukkitMember);
                                     if (player != null && player.isOnline()) {
                                         if (config().getBoolean("verbose"))
-                                            Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Removing %s from scoreboard team %s.]", bukkitMember, team.getId()), "lead.debug");
+                                            Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Removing %s from scoreboard team %s.]", bukkitMember, team.getId())), "lead.debug");
                                         bukkitTeam.removeEntry(bukkitMember);
                                     }
                                 }
@@ -344,7 +368,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                             for (ITeamMember leadMember : team.getMembers().stream().filter(leadMember -> !bukkitTeam.hasEntry(leadMember.getName())).toList()) {
                                 Objects.requireNonNull(leadMember.getName());
                                 if (config().getBoolean("verbose"))
-                                    Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Adding %s to scoreboard team %s.]", leadMember.getName(), team.getId()), "lead.debug");
+                                    Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Adding %s to scoreboard team %s.]", leadMember.getName(), team.getId())), "lead.debug");
                                 bukkitTeam.addEntry(leadMember.getName());
                             }
                         }
@@ -353,7 +377,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         for (Player player : getServer().getOnlinePlayers().stream().filter(player -> !hasTeam(player.getUniqueId())).toList()) {
                             if (!remainingTeam.hasEntry(player.getName())) {
                                 if (config().getBoolean("verbose"))
-                                    Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Adding %s to the remaining team.]", player.getName()), "lead.debug");
+                                    Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Adding %s to the remaining team.]", player.getName())), "lead.debug");
                                 remainingTeam.addEntry(player.getName());
                             }
                         }
@@ -368,7 +392,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         });
 
                         if (config().getBoolean("verbose"))
-                            Bukkit.broadcast(MiniMessageUtil.deserialize("<gray><italic>[Lead: Updated all teams in %s ms.]", System.currentTimeMillis() - timeNow), "lead.debug");
+                            Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Updated all teams in %s ms.]", System.currentTimeMillis() - timeNow)), "lead.debug");
                     } catch (Exception e) {
                         e.printStackTrace();
                         getLogger().warning("==========================================");
@@ -542,8 +566,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         leaderUniqueId,
                         members,
                         new ArrayList<>(section.getStringList("invitations").stream().map(UUID::fromString).toList()),
-                        EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
-                        EnumUtil.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
+                        EnumHelper.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("collidable"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
+                        EnumHelper.fetchEnum(org.bukkit.scoreboard.Team.OptionStatus.class, section.getString("name_tag_visibility"), org.bukkit.scoreboard.Team.OptionStatus.ALWAYS),
                         section.getBoolean("is_friendly_fire_allowed", true),
                         spawnLocation
                 );
@@ -561,6 +585,10 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 playersByTeam.put(team.getUniqueId().toString(), playerIds);
                 teamsById.put(team.getId(), team);
             }
+        }
+
+        for (Player player : getServer().getOnlinePlayers()) {
+            CommandAPI.updateRequirements(player);
         }
 
         this.config.initialize();

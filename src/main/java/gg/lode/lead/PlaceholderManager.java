@@ -1,6 +1,6 @@
 package gg.lode.lead;
 
-import gg.lode.bookshelfapi.api.util.EnumUtil;
+import gg.lode.bookshelfapi.api.util.EnumHelper;
 import gg.lode.leadapi.api.GeneratorType;
 import gg.lode.leadapi.api.ITeam;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -34,7 +34,7 @@ public class PlaceholderManager extends PlaceholderExpansion {
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         if (player == null) return null;
 
-        GeneratorType generatorType = EnumUtil.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NUMBER);
+        GeneratorType generatorType = EnumHelper.fetchEnum(GeneratorType.class, plugin.random().getString("type"), GeneratorType.NUMBER);
         ITeam team = plugin.getTeam(player.getUniqueId());
 
         return switch (params) {

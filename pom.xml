@@ -6,7 +6,7 @@
 
     <groupId>gg.lode</groupId>
     <artifactId>Lead-Paper</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.51</version>
     <packaging>jar</packaging>
 
     <name>Lead-Paper</name>
@@ -51,6 +51,18 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <paperweight-mappings-namespace>mojang</paperweight-mappings-namespace>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -93,20 +105,26 @@
     <dependencies>
         <dependency>
             <groupId>dev.jorel</groupId>
-            <artifactId>commandapi-bukkit-shade</artifactId>
-            <version>10.1.2</version>
+            <artifactId>commandapi-paper-shade</artifactId>
+            <version>11.1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>gg.lode</groupId>
+            <artifactId>Bookshelf-CommandAPI</artifactId>
+            <version>1.0.32</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>gg.lode</groupId>
             <artifactId>Bookshelf-API</artifactId>
-            <version>1.1.51</version>
+            <version>1.1.72</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>gg.lode</groupId>
             <artifactId>Bookshelf-Events</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -130,13 +148,13 @@
         <dependency>
             <groupId>de.rapha149.signgui</groupId>
             <artifactId>signgui</artifactId>
-            <version>2.4.1</version>
+            <version>2.5.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>gg.lode</groupId>
             <artifactId>Lead-API</artifactId>
-            <version>1.1.0</version>
+            <version>1.1.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
