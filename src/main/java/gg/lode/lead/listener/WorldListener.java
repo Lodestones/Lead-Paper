@@ -1,5 +1,6 @@
 package gg.lode.lead.listener;
 
+import gg.lode.bookshelfapi.api.Task;
 import gg.lode.lead.LeadPlugin;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,7 +16,8 @@ public class WorldListener implements Listener {
 
     @EventHandler
     public void on(WorldSaveEvent event) {
-        plugin.save();
+        // Save asynchronously to avoid blocking the main thread during world saves
+        Task.runAsync(plugin, plugin::save);
     }
 
 }

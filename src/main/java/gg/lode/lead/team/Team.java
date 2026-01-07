@@ -225,7 +225,11 @@ public class Team implements ITeam {
 
         this.members.add(member);
         plugin.getTeamByPlayer().put(member.getUniqueId().toString(), this.getUniqueId());
-        plugin.getPlayersByTeam().put(this.getUniqueId().toString(), new ArrayList<>(members.stream().map(ITeamMember::getUniqueId).toList()));
+        // Update the existing list instead of creating a new one
+        List<UUID> playerIds = plugin.getPlayersByTeam().computeIfAbsent(this.getUniqueId().toString(), k -> new ArrayList<>());
+        if (!playerIds.contains(member.getUniqueId())) {
+            playerIds.add(member.getUniqueId());
+        }
     }
 
     @Override
@@ -235,7 +239,11 @@ public class Team implements ITeam {
 
         this.members.add(new TeamMember(player));
         plugin.getTeamByPlayer().put(player.getUniqueId().toString(), this.getUniqueId());
-        plugin.getPlayersByTeam().put(this.getUniqueId().toString(), new ArrayList<>(members.stream().map(ITeamMember::getUniqueId).toList()));
+        // Update the existing list instead of creating a new one
+        List<UUID> playerIds = plugin.getPlayersByTeam().computeIfAbsent(this.getUniqueId().toString(), k -> new ArrayList<>());
+        if (!playerIds.contains(player.getUniqueId())) {
+            playerIds.add(player.getUniqueId());
+        }
     }
 
     @Override
