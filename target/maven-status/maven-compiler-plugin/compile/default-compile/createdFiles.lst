@@ -1,13 +1,16 @@
 gg\lode\lead\team\Team.class
 gg\lode\lead\listener\PlayerListener.class
 gg\lode\lead\team\TeamMember.class
+gg\lode\lead\listener\chat\BookshelfChatListener.class
 gg\lode\lead\LeadPlugin$1.class
-gg\lode\lead\listener\ChatListener.class
+gg\lode\lead\team\TeamAlignment.class
 gg\lode\lead\LeadPlugin.class
 gg\lode\lead\menu\TeamListMenu.class
 gg\lode\lead\command\TeamCommand.class
 gg\lode\lead\listener\WorldListener.class
 gg\lode\lead\command\TeamMessageCommand.class
+gg\lode\lead\listener\chat\SpigotChatListener.class
 gg\lode\lead\command\LeadCommand.class
 gg\lode\lead\PlaceholderManager.class
+gg\lode\lead\listener\chat\BookshelfChatListener$1.class
 gg\lode\lead\menu\TeamEditorMenu.class

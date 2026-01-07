@@ -1,10 +1,23 @@
-version: 12
+version: 14
 
 # If verbose is true, the plugin will output more information to the console/admins.
 verbose: false
 
+# Should Lead use prefix or suffix? (PREFIX or SUFFIX)
+team_alignment: PREFIX
+
 # Maximum amount of players that can be added to a team.
 max_team_size: 5
+
+# If true, players can name their team to whatever they want.
+# Note: This converts the `/team create` command to `/team create [name]`.
+nameable_teams: true
+
+# What is the minimum team name length?
+minimum_team_name_length: 3
+
+# What is the maximum team name length?
+maximum_team_name_length: 16
 
 # If true, the players are allowed to hit each other.
 friendly_fire: true
