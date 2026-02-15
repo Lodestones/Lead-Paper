@@ -6,7 +6,7 @@
 
     <groupId>gg.lode</groupId>
     <artifactId>Lead-Paper</artifactId>
-    <version>1.2.51</version>
+    <version>1.2.52</version>
     <packaging>jar</packaging>
 
     <name>Lead-Paper</name>
@@ -122,9 +122,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>gg.lode</groupId>
+            <groupId>com.github.Lodestones</groupId>
             <artifactId>Bookshelf-Events</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
