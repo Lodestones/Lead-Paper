@@ -1,5 +1,7 @@
 package gg.lode.lead.listener;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import gg.lode.bookshelfapi.api.Task;
 import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
 import gg.lode.lead.LeadPlugin;
@@ -26,6 +28,15 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void on(PlayerJoinEvent event) {
         Task.runAsync(plugin, plugin::update);
+
+        // Cache the player's skin texture for offline skull rendering
+        PlayerProfile profile = event.getPlayer().getPlayerProfile();
+        for (ProfileProperty property : profile.getProperties()) {
+            if ("textures".equals(property.getName())) {
+                plugin.cacheTexture(event.getPlayer().getUniqueId(), property.getValue());
+                break;
+            }
+        }
 
         if (plugin.config().getBoolean("auto_assign")) {
             Player player = event.getPlayer();

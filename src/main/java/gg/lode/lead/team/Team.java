@@ -271,7 +271,7 @@ public class Team implements ITeam {
         section.set("leaderUniqueId", this.leaderUniqueId == null ? null : this.leaderUniqueId.toString());
         List<Map<String, String>> members = this.members.stream().map(member -> {
             Map<String, String> arr = new HashMap<>();
-            arr.put(member.getUniqueId().toString(), member.getName());
+            arr.put(member.getUniqueId().toString(), Objects.requireNonNullElse(member.getName(), "Unknown"));
             return arr;
         }).toList();
         section.set("members", members);

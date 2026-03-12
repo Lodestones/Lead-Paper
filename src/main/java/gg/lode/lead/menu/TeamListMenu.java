@@ -1,5 +1,7 @@
 package gg.lode.lead.menu;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import gg.lode.bookshelfapi.api.menu.Menu;
 import gg.lode.bookshelfapi.api.menu.build.MenuBuilder;
 import gg.lode.bookshelfapi.api.menu.build.TopMenuBuilder;
@@ -12,7 +14,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class TeamListMenu extends Menu {
 
@@ -101,9 +103,16 @@ public class TeamListMenu extends Menu {
                 lores.add(MiniMessageHelper.deserialize(String.format("<reset><white>- <yellow>%s", teamMember.getName())).decoration(TextDecoration.ITALIC, false));
             meta.lore(lores);
             if (team.getLeaderUniqueId() != null && team.containsMember(team.getLeaderUniqueId())) {
-                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(team.getLeaderUniqueId());
-                if (offlinePlayer.getName() != null)
-                    meta.setOwningPlayer(offlinePlayer);
+                String cachedTexture = plugin.getCachedTexture(team.getLeaderUniqueId());
+                if (cachedTexture != null) {
+                    PlayerProfile profile = Bukkit.createProfile(team.getLeaderUniqueId());
+                    profile.setProperty(new ProfileProperty("textures", cachedTexture));
+                    meta.setPlayerProfile(profile);
+                } else {
+                    Player onlinePlayer = Bukkit.getPlayer(team.getLeaderUniqueId());
+                    if (onlinePlayer != null)
+                        meta.setOwningPlayer(onlinePlayer);
+                }
             }
 
             listHead.setItemMeta(meta);

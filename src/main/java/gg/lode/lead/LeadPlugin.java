@@ -53,7 +53,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.52";
+    public static final String VERSION = "v1.2.53";
     private static final int CONFIG_VERSION = 15;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
@@ -61,9 +61,11 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private final HashMap<String, UUID> teamByPlayer = new HashMap<>();
     private final HashMap<String, List<UUID>> playersByTeam = new HashMap<>();
     private final HashMap<String, ITeam> teamsById = new HashMap<>();
+    private final HashMap<UUID, String> textureCache = new HashMap<>();
     private Configuration config;
     private Configuration team;
     private Configuration random;
+    private Configuration textures;
     private boolean isTABPresent;
 
     @Override
@@ -78,6 +80,9 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
         this.random = new Configuration(this, "random.yml");
         this.random.initialize();
+
+        this.textures = new Configuration(this, "textures.yml");
+        this.textures.initialize();
 
         LeadAPI.setApi(this);
         updateConfigToLatest();
@@ -166,6 +171,29 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     public Configuration random() {
         return random;
+    }
+
+    public void cacheTexture(UUID uuid, String textureValue) {
+        textureCache.put(uuid, textureValue);
+        textures.set(uuid.toString(), textureValue);
+        textures.save();
+    }
+
+    @Nullable
+    public String getCachedTexture(UUID uuid) {
+        return textureCache.get(uuid);
+    }
+
+    private void loadTextureCache() {
+        textureCache.clear();
+        for (String key : textures.get().getKeys(false)) {
+            String value = textures.getString(key);
+            if (value != null) {
+                try {
+                    textureCache.put(UUID.fromString(key), value);
+                } catch (IllegalArgumentException ignored) {}
+            }
+        }
     }
 
     private void registerCommands() {
@@ -630,6 +658,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 teamsById.put(team.getId(), team);
             }
         }
+
+        loadTextureCache();
 
         for (Player player : getServer().getOnlinePlayers()) {
             CommandAPI.updateRequirements(player);
