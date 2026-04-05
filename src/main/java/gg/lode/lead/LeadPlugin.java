@@ -53,7 +53,7 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.53";
+    public static final String VERSION = "v1.2.54";
     private static final int CONFIG_VERSION = 15;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
@@ -62,6 +62,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private final HashMap<String, List<UUID>> playersByTeam = new HashMap<>();
     private final HashMap<String, ITeam> teamsById = new HashMap<>();
     private final HashMap<UUID, String> textureCache = new HashMap<>();
+    private final Object saveLock = new Object();
     private Configuration config;
     private Configuration team;
     private Configuration random;
@@ -216,12 +217,14 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     @Override
     public void save() {
-        // Wipe all concurrent teams first.
-        for (String key : team.get().getKeys(false))
-            team.set(key, null);
+        synchronized (saveLock) {
+            // Wipe all concurrent teams first.
+            for (String key : team.get().getKeys(false))
+                team.set(key, null);
 
-        for (ITeam team : getTeams()) team.save(this.team.get());
-        this.team.save();
+            for (ITeam team : getTeams()) team.save(this.team.get());
+            this.team.save();
+        }
     }
 
     @Nullable

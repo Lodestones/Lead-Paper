@@ -6,9 +6,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldSaveEvent;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class WorldListener implements Listener {
 
     private final LeadPlugin plugin;
+    private final AtomicBoolean saving = new AtomicBoolean(false);
 
     public WorldListener(LeadPlugin plugin) {
         this.plugin = plugin;
@@ -16,8 +19,17 @@ public class WorldListener implements Listener {
 
     @EventHandler
     public void on(WorldSaveEvent event) {
-        // Save asynchronously to avoid blocking the main thread during world saves
-        Task.runAsync(plugin, plugin::save);
+        // WorldSaveEvent fires for each world (overworld, nether, end).
+        // Use CAS to ensure only one async save runs per cycle.
+        if (saving.compareAndSet(false, true)) {
+            Task.runAsync(plugin, () -> {
+                try {
+                    plugin.save();
+                } finally {
+                    saving.set(false);
+                }
+            });
+        }
     }
 
 }
