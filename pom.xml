@@ -14,7 +14,7 @@
     <description>A lightweight plugin that creates visual teams showcased in Civilization, Battle Royale, or SMP events.
     </description>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <url>https://lode.gg</url>
@@ -110,9 +110,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>gg.lode</groupId>
+            <groupId>com.github.Lodestones</groupId>
             <artifactId>Bookshelf-CommandAPI</artifactId>
-            <version>1.0.32</version>
+            <version>1.0.41</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -142,7 +142,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.20.4-R0.1-SNAPSHOT</version>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
