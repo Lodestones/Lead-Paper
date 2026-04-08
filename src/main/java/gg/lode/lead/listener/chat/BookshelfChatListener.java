@@ -85,10 +85,10 @@ public class BookshelfChatListener implements Listener {
                 }
             }
 
+            event.setModified(false);
             return;
         }
 
-        event.setModified(true);
     }
 
 }

@@ -53,7 +53,9 @@ import java.util.*;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
-    public static final String VERSION = "v1.2.54";
+    public String getVersion() {
+        return "v" + getDescription().getVersion();
+    }
     private static final int CONFIG_VERSION = 15;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
@@ -134,13 +136,20 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         this.registerCommands();
         this.reload(true);
 
-        if (getServer().getPluginManager().isPluginEnabled("Bookshelf"))
+        if (getServer().getPluginManager().isPluginEnabled("Bookshelf")) {
             getServer().getPluginManager().registerEvents(new BookshelfChatListener(this), this);
-        else getServer().getPluginManager().registerEvents(new SpigotChatListener(this), this);
+            getLogger().warning("Hooked into Bookshelf's Chat Manager!");
+            getLogger().warning("==========================================");
+        }
+        else {
+            getServer().getPluginManager().registerEvents(new SpigotChatListener(this), this);
+            getLogger().warning("Hooked into Spigot's Chat Manager!");
+            getLogger().warning("==========================================");
+        }
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
-        getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://lode.gg/plugin/lead", "https://lode.gg/api/plugins/lead/version", VERSION), this);
+        getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://lode.gg/plugin/lead", "https://lode.gg/api/plugins/lead/version", getVersion()), this);
 
         this.isTABPresent = getServer().getPluginManager().isPluginEnabled("TAB");
         if (this.isTABPresent) {
@@ -163,7 +172,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
             getLogger().severe("TAB is not installed!");
             getLogger().severe("It's okay, Lead will continue to function as best as it can.");
             getLogger().severe(" ");
-            getLogger().severe("However, if you do intend on using Lead for a large amount of players,");
+            getLogger().severe("However, if you do intend on using Lead for over 20+ players,");
             getLogger().severe("I highly recommend installing TAB to remove all of the bugs that come with the vanilla team API.");
             getLogger().severe("https://modrinth.com/plugin/tab-was-taken");
             getLogger().severe("==========================================");
@@ -219,10 +228,11 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     public void save() {
         synchronized (saveLock) {
             // Wipe all concurrent teams first.
-            for (String key : team.get().getKeys(false))
+            // Copy keys to avoid ConcurrentModificationException from async access.
+            for (String key : new ArrayList<>(team.get().getKeys(false)))
                 team.set(key, null);
 
-            for (ITeam team : getTeams()) team.save(this.team.get());
+            for (ITeam team : new ArrayList<>(getTeams())) team.save(this.team.get());
             this.team.save();
         }
     }

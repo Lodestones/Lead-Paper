@@ -13,7 +13,7 @@ public class LeadCommand extends CommandAPICommand {
         super("lead");
         withPermission("lodestone.lead.commands.lead");
         withSubcommand(new CommandAPICommand("version")
-                .executes((CommandExecutor) (sender, args) -> sender.sendMessage(MiniMessageHelper.deserialize(String.format("Running Lead %s", LeadPlugin.VERSION))))
+                .executes((CommandExecutor) (sender, args) -> sender.sendMessage(MiniMessageHelper.deserialize(String.format("Running Lead %s", plugin.getVersion()))))
         );
         withSubcommand(new CommandAPICommand("update")
                 .withPermission("lodestone.lead.commands.update")
