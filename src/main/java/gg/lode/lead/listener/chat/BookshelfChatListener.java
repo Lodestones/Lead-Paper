@@ -69,22 +69,18 @@ public class BookshelfChatListener implements Listener {
             } else {
                 Component newPrefix = MiniMessageHelper.persistStyle(MiniMessageHelper.deserialize(String.format("<font:%s><%s>%s</font>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName(), String.format("<%s>", plugin.config().getBoolean("color_names") ? team.getColor() : "reset")))).decoration(TextDecoration.BOLD, false);
 
+                // Use the leading/trailing hooks so the team tag sits BEFORE the rank
+                // prefix (or after the suffix), instead of event.prefix()+setModified(false)
+                // which lets the LuckPerms block prepend the rank and push the tag after it.
                 switch (EnumHelper.fetchEnum(TeamAlignment.class, plugin.config().getString("team_alignment"), TeamAlignment.PREFIX)) {
-                    case PREFIX -> {
-                        if (event.prefix() == null)
-                            event.prefix(newPrefix);
-                        else
-                            event.prefix(event.prefix().append(Component.empty().decoration(TextDecoration.BOLD, false)).append(Component.text(MiniMessageHelper.serialize(event.prefix()).isEmpty() ? "" : " ").append(newPrefix)));
-                    }
-                    case SUFFIX -> {
-                        if (event.suffix() == null)
-                            event.suffix(newPrefix);
-                        else
-                            event.suffix(event.suffix().append(Component.empty().decoration(TextDecoration.BOLD, false)).append(Component.text(MiniMessageHelper.serialize(event.suffix()).isEmpty() ? "" : " ").append(newPrefix)));
-                    }
+                    case PREFIX -> event.addLeadingPrefix(newPrefix.append(Component.text(" ")));
+                    case SUFFIX -> event.addTrailingSuffix(Component.text(" ").append(newPrefix));
                 }
             }
 
+            // The white player/message colors above flag the event as modified; reset that
+            // so Bookshelf still applies the LuckPerms rank prefix/colors. The team tag is
+            // positioned independently via the hooks above and is unaffected by this flag.
             event.setModified(false);
             return;
         }
