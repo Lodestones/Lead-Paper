@@ -233,7 +233,7 @@ public class TeamCommand extends CommandAPICommand {
                             return;
                         }
 
-                        TeamInviteEvent teamInvite = new TeamInviteEvent(team, target);
+                        TeamInviteEvent teamInvite = new TeamInviteEvent(team, player, target);
                         if (teamInvite.callEvent()) {
                             team.addInvitation(target.getUniqueId());
                             player.sendMessage(MiniMessageHelper.deserialize(String.format("<yellow>%s</yellow> <gray>has been invited to your team!", target.getName())));
