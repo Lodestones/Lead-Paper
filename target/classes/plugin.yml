@@ -1,5 +1,5 @@
 name: Lead
-version: '1.2.55'
+version: '1.2.56'
 main: gg.lode.lead.LeadPlugin
 api-version: '1.21'
 authors: [Apollo30]
