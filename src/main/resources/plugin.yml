@@ -6,6 +6,7 @@ authors: [Apollo30]
 description: A lightweight plugin that creates visual teams showcased in Civilization or Battle Royale events. 
 website: https://lode.gg/
 softdepend:
+  - Frame
   - TAB
   - Bookshelf
   - PlaceholderAPI
