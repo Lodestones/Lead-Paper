@@ -331,13 +331,23 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                                         continue;
                                     }
 
-                                    String formattedPrefix = String.format(
-                                            "<font:%s><%s>%s</font>%s",
+                                    String coloredName = String.format(
+                                            "<font:%s><%s>%s</font>",
                                             fontToUse,
                                             team.getColor(),
-                                            team.getName(),
-                                            team.getName().isEmpty() ? "" : String.format((alignment == TeamAlignment.SUFFIX ? " " : "") + ("<%s>") + (alignment == TeamAlignment.PREFIX ? " " : ""), colorNames ? team.getColor() : "white")
+                                            team.getName()
                                     );
+
+                                    String formattedPrefix;
+                                    if (team.getName().isEmpty()) {
+                                        formattedPrefix = coloredName;
+                                    } else if (alignment == TeamAlignment.SUFFIX) {
+                                        // Suffix goes after the player name: " {suffix}"
+                                        formattedPrefix = " " + coloredName;
+                                    } else {
+                                        // Prefix goes before the player name: "{prefix} ", then reset the color for the name
+                                        formattedPrefix = coloredName + String.format(" <%s>", colorNames ? team.getColor() : "white");
+                                    }
 
                                     switch (alignment) {
                                         case SUFFIX -> {
@@ -420,7 +430,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                                         bukkitTeam.suffix(Component.empty());
                                     }
                                     case SUFFIX -> {
-                                        bukkitTeam.suffix(MiniMessageHelper.deserialize(String.format("<%s>%s ", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
+                                        bukkitTeam.suffix(MiniMessageHelper.deserialize(String.format(" <%s>%s", team.getColor(), Objects.requireNonNullElse(team.getName(), team.getId()))));
                                         bukkitTeam.prefix(Component.empty());
                                     }
                                 }
