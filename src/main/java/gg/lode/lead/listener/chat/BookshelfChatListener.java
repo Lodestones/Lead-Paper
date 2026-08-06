@@ -66,7 +66,7 @@ public class BookshelfChatListener implements Listener {
 
                 event.setCancelled(true);
                 return;
-            } else {
+            } else if (plugin.config().getBoolean("show_in_chat", true)) {
                 Component newPrefix = MiniMessageHelper.persistStyle(MiniMessageHelper.deserialize(String.format("<font:%s><%s>%s</font>%s", plugin.config().getString("font", "default"), team.getColor(), team.getName(), String.format("<%s>", plugin.config().getBoolean("color_names") ? team.getColor() : "reset")))).decoration(TextDecoration.BOLD, false);
 
                 // Use the leading/trailing hooks so the team tag sits BEFORE the rank

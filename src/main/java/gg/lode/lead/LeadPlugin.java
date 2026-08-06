@@ -12,6 +12,7 @@ import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
 import gg.lode.lead.command.LeadCommand;
 import gg.lode.lead.command.TeamCommand;
 import gg.lode.lead.command.TeamMessageCommand;
+import gg.lode.lead.frame.FrameHook;
 import gg.lode.lead.listener.PlayerListener;
 import gg.lode.lead.listener.WorldListener;
 import gg.lode.lead.listener.chat.BookshelfChatListener;
@@ -30,6 +31,7 @@ import gg.lode.leadapi.api.event.TeamRemoveEvent;
 import gg.lode.leadapi.api.exception.MaxTeamLimitException;
 import gg.lode.leadapi.api.exception.TeamAlreadyExistsException;
 import gg.lode.leadapi.api.exception.TeamNotFoundException;
+import gg.lode.frameapi.FrameAPI;
 import me.neznamy.tab.api.TabAPI;
 import me.neznamy.tab.api.TabPlayer;
 import me.neznamy.tab.api.event.plugin.TabLoadEvent;
@@ -56,7 +58,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     public String getVersion() {
         return "v" + getDescription().getVersion();
     }
-    private static final int CONFIG_VERSION = 15;
+    private static final int CONFIG_VERSION = 16;
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
@@ -70,6 +72,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private Configuration random;
     private Configuration textures;
     private boolean isTABPresent;
+    private boolean isFramePresent;
+    private FrameHook frameHook;
 
     @Override
     public void onLoad() {
@@ -102,6 +106,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 }
                 case 13 -> config.set("team_alignment", TeamAlignment.PREFIX.name());
                 case 14 -> config.set("should_update", true);
+                case 15 -> config.set("show_in_chat", true);
             }
 
             // Recursively call this method to ensure all updates are applied
@@ -150,6 +155,21 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new WorldListener(this), this);
         getServer().getPluginManager().registerEvents(new VersionUpdater(this, "Lead", "https://lode.gg/plugin/lead", "https://lode.gg/api/plugins/lead/version", getVersion()), this);
+
+        this.isFramePresent = getServer().getPluginManager().isPluginEnabled("Frame") && FrameAPI.isAvailable();
+        if (this.isFramePresent) {
+            try {
+                this.frameHook = new FrameHook(this);
+                getLogger().warning("==========================================");
+                getLogger().warning("Hooked into Frame!");
+                getLogger().warning("Lead will now use Frame to display teams.");
+                getLogger().warning("==========================================");
+            } catch (Exception e) {
+                e.printStackTrace();
+                this.isFramePresent = false;
+                this.frameHook = null;
+            }
+        }
 
         this.isTABPresent = getServer().getPluginManager().isPluginEnabled("TAB");
         if (this.isTABPresent) {
@@ -221,6 +241,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     @Override
     public void onDisable() {
+        if (frameHook != null) frameHook.clear();
         this.save();
     }
 
@@ -310,6 +331,14 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 // Now execute all Bukkit/TAB API calls on the main thread
                 Bukkit.getScheduler().runTask(this, () -> {
                     try {
+                        if (isFramePresent && frameHook != null) {
+                            frameHook.render(playerTeamMap, alignment, colorNames, fontToUse, getServer().getOnlinePlayers());
+
+                            if (verbose)
+                                Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Updated all teams via Frame in %s ms.]", System.currentTimeMillis() - timeNow)), "lead.debug");
+                            return;
+                        }
+
                         if (isTABPresent) {
                             // TAB API calls must be on main thread
                             Class<?> tabClass = Class.forName("me.neznamy.tab.api.TabAPI");

@@ -70,7 +70,10 @@ public class SpigotChatListener implements Listener {
                 }
             } else {
                 // Public team message with optional name coloring
-                Component teamPrefix = ctx.replaceAsComponent("<font:<font>><<teamColor>><teamName></font><colorNames> ").decoration(TextDecoration.BOLD, false);
+                boolean showInChat = plugin.config().getBoolean("show_in_chat", true);
+                Component teamPrefix = showInChat
+                        ? ctx.replaceAsComponent("<font:<font>><<teamColor>><teamName></font><colorNames> ").decoration(TextDecoration.BOLD, false)
+                        : Component.empty();
                 Component messageColor = ctx.replaceAsComponent("<playerName>: <message>");
 
                 Component messageToSend = teamPrefix

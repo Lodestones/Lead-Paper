@@ -1,4 +1,4 @@
-version: 15
+version: 16
 
 # If false, lead will no longer update TAB or Name Tags with their prefix
 # This is useful if you just want to store teams in the backend
@@ -56,6 +56,11 @@ font: null
 # Should Lead color the player names?
 # If enabled, player chat names will be colored based on their team color.
 color_names: false
+
+# Should the team prefix/suffix show in chat?
+# If false, the team tag is hidden from public chat messages (name colors and
+# LuckPerms rank prefixes still apply). Team chat (/team chat) is unaffected.
+show_in_chat: true
 
 # How many teams can be created?
 max_teams: 1000
