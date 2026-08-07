@@ -27,7 +27,7 @@ public class PlaceholderManager extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getVersion() {
-        return "1.0.0";
+        return "1.1.0";
     }
 
     @Override
@@ -38,6 +38,7 @@ public class PlaceholderManager extends PlaceholderExpansion {
         ITeam team = plugin.getTeam(player.getUniqueId());
 
         return switch (params) {
+            case "team_exists" -> String.valueOf(team != null);
             case "team_id" -> team == null ? generatorType == GeneratorType.NUMBER ? String.valueOf(Integer.MAX_VALUE) : null : team.getId();
             case "team_name" -> team == null ? null : team.getName();
             case "team_size" -> team == null ? null : String.valueOf(team.getMembers().size());
