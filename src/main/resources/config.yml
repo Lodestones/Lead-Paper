@@ -1,8 +1,20 @@
-version: 16
+version: 17
 
 # If false, lead will no longer update TAB or Name Tags with their prefix
 # This is useful if you just want to store teams in the backend
 should_update: true
+
+# If true, Lead keeps every team mirrored onto the vanilla scoreboard so target
+# selectors like @a[team=1] keep working even when TAB or Frame is installed.
+# The team label itself is still rendered by TAB/Frame, not by the scoreboard.
+selector_support: true
+
+# What vanilla target selectors match a team on.
+# - ID: @a[team=1] - the team's id. Stays the same when a team is renamed.
+# - NAME: @a[team="Hello World"] - the team's display name, falling back to the
+#   id when the name is empty or already taken by another team.
+# Names are stripped of formatting and cut to 16 characters, vanilla's limit.
+selector_key: ID
 
 # If verbose is true, the plugin will output more information to the console/admins.
 verbose: false
