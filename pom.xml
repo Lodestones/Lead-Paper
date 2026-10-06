@@ -106,13 +106,13 @@
         <dependency>
             <groupId>dev.jorel</groupId>
             <artifactId>commandapi-paper-shade</artifactId>
-            <version>12.0.0</version>
+            <version>12.1.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.Lodestones</groupId>
             <artifactId>Bookshelf-CommandAPI</artifactId>
-            <version>1.0.46</version>
+            <version>1.0.47</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
