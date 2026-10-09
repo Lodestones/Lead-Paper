@@ -9,6 +9,9 @@ import gg.lode.bookshelfapi.api.VersionUpdater;
 import gg.lode.bookshelfapi.api.util.EnumHelper;
 import gg.lode.bookshelfapi.api.util.Metrics;
 import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
+import gg.lode.bookshelflocales.LocaleManager;
+import gg.lode.bookshelflocales.picker.LanguagePicker;
+import gg.lode.bookshelfapi.api.util.VariableContext;
 import gg.lode.lead.command.LeadCommand;
 import gg.lode.lead.command.TeamCommand;
 import gg.lode.lead.command.TeamMessageCommand;
@@ -54,13 +57,18 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.Locale;
 
 public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     public String getVersion() {
         return "v" + getDescription().getVersion();
     }
-    private static final int CONFIG_VERSION = 17;
+    private static final int CONFIG_VERSION = 18;
+    private static final String[] BUNDLED_LOCALES = {
+            "en_us", "es_es", "pt_br", "fr_fr", "de_de", "it_it", "nl_nl",
+            "pl_pl", "ru_ru", "tr_tr", "ja_jp", "ko_kr", "zh_cn", "zh_tw"
+    };
     private static final String TEAMLESS_ID = "TEAMLESS";
     public static Random SEED = new Random();
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
@@ -77,6 +85,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private boolean isFramePresent;
     private FrameHook frameHook;
     private ScoreboardSync scoreboardSync;
+    private LocaleManager locales;
 
     @Override
     public void onLoad() {
@@ -114,6 +123,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                     config.set("selector_support", true);
                     config.set("selector_key", SelectorKey.ID.name());
                 }
+                case 17 -> config.set("language", "auto");
             }
 
             // Recursively call this method to ensure all updates are applied
@@ -133,6 +143,15 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         this.scoreboardSync = new ScoreboardSync(this);
         BookshelfAPI.init(this, BookshelfAPI.Builder.createDisabled()
                 .useMenuManager(true));
+
+        this.locales = LocaleManager.builder()
+                .defaultLocale("en_us")
+                .bundled(getClass().getClassLoader(), "locales", BUNDLED_LOCALES)
+                .github("Lodestones/Locales", "Lead")
+                .folder(getDataFolder().toPath().resolve("locales"))
+                .exportBundledDefaults(true)
+                .logger(getLogger()::warning)
+                .build();
 
         new Metrics(this, 22603); // bStats
 
@@ -346,7 +365,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                                 scoreboardSync.sync(ScoreboardSync.Mode.SELECTOR, leadTeams, playerTeamMap, teamMemberNames, alignment, selectorKey, verbose);
 
                             if (verbose)
-                                Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Updated all teams via Frame in %s ms.]", System.currentTimeMillis() - timeNow)), "lead.debug");
+                                Bukkit.broadcast(message(getServer().getConsoleSender(), "lead.update.frame_timing", VariableContext.of("ms", String.valueOf(System.currentTimeMillis() - timeNow))), "lead.debug");
                             return;
                         }
 
@@ -411,7 +430,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                         }
 
                         if (config().getBoolean("verbose"))
-                            Bukkit.broadcast(MiniMessageHelper.deserialize(String.format("<gray><italic>[Lead: Updated all teams in %s ms.]", System.currentTimeMillis() - timeNow)), "lead.debug");
+                            Bukkit.broadcast(message(getServer().getConsoleSender(), "lead.update.tab_timing", VariableContext.of("ms", String.valueOf(System.currentTimeMillis() - timeNow))), "lead.debug");
                     } catch (Exception e) {
                         e.printStackTrace();
                         getLogger().warning("==========================================");
@@ -670,5 +689,41 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
 
     public Configuration teams() {
         return team;
+    }
+
+    public Component message(Object recipient, String key, VariableContext variables) {
+        String locale = localeOf(recipient);
+        return variables == null ? locales.get(key, locale) : locales.get(key, locale, variables);
+    }
+
+    /** Raw MiniMessage for {@code key} in the recipient's language, for dialog labels. */
+    public String text(Object recipient, String key) {
+        return locales._get(key, localeOf(recipient));
+    }
+
+    private String localeOf(Object recipient) {
+        // A language picked in /lead config wins. "auto" leaves it to each player's own.
+        String language = getLanguage();
+        if (!LanguagePicker.AUTOMATIC.equalsIgnoreCase(language) && locales.hasLocale(language)) {
+            return language.toLowerCase(Locale.ROOT);
+        }
+
+        String locale = recipient instanceof Player player
+                ? player.locale().toString().toLowerCase(Locale.ROOT)
+                : locales.getDefaultLocale();
+        return locales.hasLocale(locale) ? locale : locales.getDefaultLocale();
+    }
+
+    public String getLanguage() {
+        return config.getString("language", LanguagePicker.AUTOMATIC);
+    }
+
+    public void setLanguage(String language) {
+        config.set("language", language);
+        config.save();
+    }
+
+    public Component message(Object recipient, String key) {
+        return message(recipient, key, null);
     }
 }

@@ -56,7 +56,7 @@ public class SpigotChatListener implements Listener {
                 TeamMessageEvent teamMessageEvent = new TeamMessageEvent(player, MiniMessageHelper.serialize(event.message()));
                 if (teamMessageEvent.callEvent()) {
                     // Team Chat prefix and message color
-                    Component prefix = MiniMessageHelper.deserialize("<green><bold>TEAM » ");
+                    Component prefix = MiniMessageHelper.deserialize(plugin.text(player, "lead.chat.prefix"));
                     Component teamLabel = ctx.replaceAsComponent("<reset><font:<font>><<teamColor>><teamName></font><<teamColor>> ");
                     Component messageColor = ctx.replaceAsComponent("<playerName>: <message>");
 

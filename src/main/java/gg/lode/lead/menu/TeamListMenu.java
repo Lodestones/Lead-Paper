@@ -54,7 +54,7 @@ public class TeamListMenu extends Menu {
         pane.editMeta(meta -> meta.displayName(Component.empty()));
 
         builder
-                .setTitle("Team List")
+                .setTitle(plugin.text(player, "lead.menu.title.team_list"))
                 .setRows(6)
                 .outline(pane)
                 .addClickAction(e -> e.setCancelled(true));
@@ -63,13 +63,13 @@ public class TeamListMenu extends Menu {
         List<ITeam> currentPage = chunkedPages.get(page);
 
         ItemStack goBack = new ItemStack(Material.ARROW);
-        goBack.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize("<green>Go Back").decoration(TextDecoration.ITALIC, false)));
+        goBack.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize(plugin.text(player, "lead.menu.button.go_back")).decoration(TextDecoration.ITALIC, false)));
 
         ItemStack goForward = new ItemStack(Material.ARROW);
-        goForward.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize("<green>Go Forward").decoration(TextDecoration.ITALIC, false)));
+        goForward.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize(plugin.text(player, "lead.menu.button.go_forward")).decoration(TextDecoration.ITALIC, false)));
 
         ItemStack back = new ItemStack(Material.BARRIER);
-        back.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize("<reset><red>Back").decoration(TextDecoration.ITALIC, false)));
+        back.editMeta(ItemMeta.class, meta -> meta.displayName(MiniMessageHelper.deserialize(plugin.text(player, "lead.menu.button.back")).decoration(TextDecoration.ITALIC, false)));
 
         builder.editRow(0,
                 rowBuilder -> rowBuilder.setSlot(0, back,

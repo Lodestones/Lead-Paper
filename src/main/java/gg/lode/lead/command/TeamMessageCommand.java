@@ -22,7 +22,7 @@ public class TeamMessageCommand extends CommandAPICommand {
         executesPlayer((player, args) -> {
             ITeam team = plugin.getTeam(player.getUniqueId());
             if (team == null) {
-                player.sendMessage(MiniMessageHelper.deserialize("<red>You are not in a team!"));
+                player.sendMessage(plugin.message(player, "lead.command.no_team"));
                 return;
             }
 
@@ -41,7 +41,7 @@ public class TeamMessageCommand extends CommandAPICommand {
                     ctx.set("messageColor", "#FFFFFF");
                     ctx.set("colorNames", colorNames ? String.format("<%s>", team.getColor()) : "<reset>");
 
-                    Component prefix = MiniMessageHelper.deserialize("<green><bold>TEAM » ");
+                    Component prefix = MiniMessageHelper.deserialize(plugin.text(player, "lead.chat.prefix"));
                     Component teamLabel = ctx.replaceAsComponent("<reset><font:<font>><<teamColor>><teamName></font><colorNames> ");
                     Component messageColor = ctx.replaceAsComponent("<playerName>: <message>");
 

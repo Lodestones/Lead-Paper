@@ -4,7 +4,7 @@
   <groupId>gg.lode</groupId>
   <artifactId>Lead-Paper</artifactId>
   <name>Lead-Paper</name>
-  <version>1.2.56</version>
+  <version>1.4.0</version>
   <description>A lightweight plugin that creates visual teams showcased in Civilization, Battle Royale, or SMP events.</description>
   <url>https://lode.gg</url>
   <build>
@@ -37,6 +37,10 @@
                 <relocation>
                   <pattern>dev.jorel.commandapi</pattern>
                   <shadedPattern>dev.jorel.commandapi.lead</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>gg.lode.bookshelflocales</pattern>
+                  <shadedPattern>gg.lode.bookshelflocales.lead</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
@@ -100,6 +104,12 @@
       <groupId>com.github.NEZNAMY</groupId>
       <artifactId>TAB-API</artifactId>
       <version>5.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>gg.lode</groupId>
+      <artifactId>Frame-API</artifactId>
+      <version>1.0.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

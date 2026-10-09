@@ -3,7 +3,7 @@ package gg.lode.lead.listener;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import gg.lode.bookshelfapi.api.Task;
-import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
+import gg.lode.bookshelfapi.api.util.VariableContext;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import org.bukkit.Bukkit;
@@ -55,7 +55,7 @@ public class PlayerListener implements Listener {
                 player.teleport(team.getSpawnLocation());
             }
 
-            player.sendMessage(MiniMessageHelper.deserialize(String.format(" \n  <green><bold>PLAYER JOINED\n  <reset><yellow>%s</yellow> <gray>has joined your team!\n ", player.getName())));
+            player.sendMessage(plugin.message(player, "lead.command.player_joined", VariableContext.of("player", player.getName())));
         }
     }
 

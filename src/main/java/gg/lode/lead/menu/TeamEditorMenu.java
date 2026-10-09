@@ -8,7 +8,7 @@ import gg.lode.bookshelfapi.api.item.ItemBuilder;
 import gg.lode.bookshelfapi.api.menu.Menu;
 import gg.lode.bookshelfapi.api.menu.build.MenuBuilder;
 import gg.lode.bookshelfapi.api.menu.build.TopMenuBuilder;
-import gg.lode.bookshelfapi.api.util.MiniMessageHelper;
+import gg.lode.bookshelfapi.api.util.VariableContext;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.leadapi.api.ITeam;
 import org.bukkit.Color;
@@ -40,14 +40,14 @@ public class TeamEditorMenu extends Menu {
         return builder
                 .setRows(3)
                 .outline(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).title("").build())
-                .setTitle(String.format("Editing: Team %s", team.getName()))
+                .setTitle(VariableContext.of("name", team.getName()).replace(plugin.text(player, "lead.menu.title.team_editor")))
                 .editRow(1, rowBuilder -> {
                     rowBuilder
-                            .setSlot(1, new ItemBuilder(Material.PAPER).title("Id").lore(String.format("<gray>Currently: <white>%s", team.getId())).build(), event -> {
+                            .setSlot(1, new ItemBuilder(Material.PAPER).title(plugin.text(player, "lead.menu.item.id")).lore(VariableContext.of("value", team.getId()).replace(plugin.text(player, "lead.menu.item.currently"))).build(), event -> {
                                 event.setCancelled(true);
                                 try {
                                     SignGUI.builder()
-                                            .setLines("", "^^^^^^^^^^^^", "Enter a new", "team id")
+                                            .setLines("", "^^^^^^^^^^^^", plugin.text(player, "lead.menu.sign.enter_new"), plugin.text(player, "lead.menu.sign.team_id"))
                                             .setType(Material.OAK_SIGN)
                                             .setColor(DyeColor.BLACK)
                                             .setHandler((p, result) -> {
@@ -55,18 +55,18 @@ public class TeamEditorMenu extends Menu {
 
                                                 if (input.isEmpty()) {
                                                     // The user has not entered anything on line 2, so we open the sign again
-                                                    return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", "Enter a new", "team id"));
+                                                    return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", plugin.text(player, "lead.menu.sign.enter_new"), plugin.text(player, "lead.menu.sign.team_id")));
                                                 }
 
                                                 if (input.matches("[a-zA-Z0-9_]+")) {
                                                     team.setId(input);
                                                     if (plugin.config().getBoolean("automatic_updates", true))
                                                         plugin.update();
-                                                    player.sendMessage(MiniMessageHelper.deserialize(String.format("<green>Successfully set the team id to %s.", team.getId())));
+                                                    player.sendMessage(plugin.message(player, "lead.menu.id.success", VariableContext.of("id", team.getId())));
                                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                                                     Task.later(plugin, this::update, 1);
                                                 } else {
-                                                    player.sendMessage(MiniMessageHelper.deserialize("<red>Please input a valid team id."));
+                                                    player.sendMessage(plugin.message(player, "lead.menu.id.invalid"));
                                                 }
 
                                                 return Collections.emptyList();
@@ -78,11 +78,11 @@ public class TeamEditorMenu extends Menu {
                                 }
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                             })
-                            .setSlot(2, new ItemBuilder(Material.NAME_TAG).title("Display Name").lore(String.format("<gray>Currently: <white>%s", team.getName())).build(), event -> {
+                            .setSlot(2, new ItemBuilder(Material.NAME_TAG).title(plugin.text(player, "lead.menu.item.display_name")).lore(VariableContext.of("value", team.getName()).replace(plugin.text(player, "lead.menu.item.currently"))).build(), event -> {
                                 event.setCancelled(true);
                                 try {
                                     SignGUI.builder()
-                                            .setLines("", "^^^^^^^^^^^^", "Enter a new", "display name")
+                                            .setLines("", "^^^^^^^^^^^^", plugin.text(player, "lead.menu.sign.enter_new"), plugin.text(player, "lead.menu.sign.display_name"))
                                             .setType(Material.OAK_SIGN)
                                             .setColor(DyeColor.BLACK)
                                             .setHandler((p, result) -> {
@@ -90,13 +90,13 @@ public class TeamEditorMenu extends Menu {
 
                                                 if (input.isEmpty()) {
                                                     // The user has not entered anything on line 2, so we open the sign again
-                                                    return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", "Enter a new", "display name"));
+                                                    return List.of(SignGUIAction.displayNewLines("", "^^^^^^^^^^^^", plugin.text(player, "lead.menu.sign.enter_new"), plugin.text(player, "lead.menu.sign.display_name")));
                                                 }
 
                                                 team.setName(input);
                                                 if (plugin.config().getBoolean("automatic_updates", true))
                                                     plugin.update();
-                                                player.sendMessage(MiniMessageHelper.deserialize(String.format("<green>Successfully set the team name to %s.", team.getName())));
+                                                player.sendMessage(plugin.message(player, "lead.menu.name.success", VariableContext.of("name", team.getName())));
                                                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                                                 Task.later(plugin, () -> new TeamEditorMenu(plugin, player, team).open(), 1);
                                                 return Collections.emptyList();
@@ -108,7 +108,7 @@ public class TeamEditorMenu extends Menu {
                                 }
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                             })
-                            .setSlot(3, new ItemBuilder(Material.GLASS).title("Collidable").lore(String.format("<gray>Currently: <white>%s", team.getCollidable().name())).build(), event -> {
+                            .setSlot(3, new ItemBuilder(Material.GLASS).title(plugin.text(player, "lead.menu.item.collidable")).lore(VariableContext.of("value", team.getCollidable().name()).replace(plugin.text(player, "lead.menu.item.currently"))).build(), event -> {
                                 event.setCancelled(true);
                                 int ordinal = team.getCollidable().ordinal();
                                 team.setCollidable(Team.OptionStatus.values()[(ordinal + 1) % Team.OptionStatus.values().length]);
@@ -117,7 +117,7 @@ public class TeamEditorMenu extends Menu {
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
                             })
-                            .setSlot(4, new ItemBuilder(Material.POTION).flags(ItemFlag.HIDE_ATTRIBUTES).addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 1, 1)).potionColor(Color.WHITE).title("Name Tag Visibility").lore(String.format("<gray>Currently: <white>%s", team.getNameTagVisibility().name())).build(), event -> {
+                            .setSlot(4, new ItemBuilder(Material.POTION).flags(ItemFlag.HIDE_ATTRIBUTES).addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 1, 1)).potionColor(Color.WHITE).title(plugin.text(player, "lead.menu.item.name_tag")).lore(VariableContext.of("value", team.getNameTagVisibility().name()).replace(plugin.text(player, "lead.menu.item.currently"))).build(), event -> {
                                 event.setCancelled(true);
                                 int ordinal = team.getNameTagVisibility().ordinal();
                                 team.setNameTagVisibility(Team.OptionStatus.values()[(ordinal + 1) % Team.OptionStatus.values().length]);
@@ -126,7 +126,7 @@ public class TeamEditorMenu extends Menu {
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
                             })
-                            .setSlot(5, new ItemBuilder(Material.GOLDEN_SWORD).title("Friendly Fire").lore(team.isFriendlyFireAllowed() ? "<green>Enabled" : "<red>Disabled").build(), event -> {
+                            .setSlot(5, new ItemBuilder(Material.GOLDEN_SWORD).title(plugin.text(player, "lead.menu.item.friendly_fire")).lore(plugin.text(player, team.isFriendlyFireAllowed() ? "lead.menu.state.enabled" : "lead.menu.state.disabled")).build(), event -> {
                                 event.setCancelled(true);
                                 team.setFriendlyFireAllowed(!team.isFriendlyFireAllowed());
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
@@ -134,7 +134,7 @@ public class TeamEditorMenu extends Menu {
                                 if (plugin.config().getBoolean("automatic_updates", true))
                                     plugin.update();
                             })
-                            .setSlot(6, new ItemBuilder(Material.WHITE_WOOL).title("Color").lore(String.format("<gray>Currently: <white>%s", team.getColor())).build(), event -> {
+                            .setSlot(6, new ItemBuilder(Material.WHITE_WOOL).title(plugin.text(player, "lead.menu.item.color")).lore(VariableContext.of("value", team.getColor()).replace(plugin.text(player, "lead.menu.item.currently"))).build(), event -> {
                                 event.setCancelled(true);
                                 try {
                                     SignGUI.builder()
@@ -155,11 +155,11 @@ public class TeamEditorMenu extends Menu {
                                                     team.setColor(input);
                                                     if (plugin.config().getBoolean("automatic_updates", true))
                                                         plugin.update();
-                                                    player.sendMessage(MiniMessageHelper.deserialize(String.format("<green>Successfully set the team color to <%s>%s.", team.getColor(), team.getColor())));
+                                                    player.sendMessage(plugin.message(player, "lead.menu.color.success", VariableContext.of("color", team.getColor()).with("color", team.getColor())));
                                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                                                     Task.later(plugin, this::update, 1);
                                                 } else {
-                                                    player.sendMessage(MiniMessageHelper.deserialize("<red>Please input a valid hex color."));
+                                                    player.sendMessage(plugin.message(player, "lead.menu.color.invalid"));
                                                 }
 
                                                 return Collections.emptyList();
@@ -171,7 +171,7 @@ public class TeamEditorMenu extends Menu {
                                 }
                                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 2);
                             })
-                            .setSlot(7, new ItemBuilder(Material.BEDROCK).title("Coming Soon").lore("<gray>Reserved for future updates.").build(), event -> {
+                            .setSlot(7, new ItemBuilder(Material.BEDROCK).title(plugin.text(player, "lead.menu.item.coming_soon")).lore(plugin.text(player, "lead.menu.item.coming_soon_lore")).build(), event -> {
                                 event.setCancelled(true);
                             });
                 });

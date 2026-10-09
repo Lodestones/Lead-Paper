@@ -1,5 +1,9 @@
 version: 17
 
+# The language Lead speaks. "auto" uses each player's own game language, or set a
+# locale code such as en_us or ru_ru to use one for everybody.
+language: auto
+
 # If false, lead will no longer update TAB or Name Tags with their prefix
 # This is useful if you just want to store teams in the backend
 should_update: true

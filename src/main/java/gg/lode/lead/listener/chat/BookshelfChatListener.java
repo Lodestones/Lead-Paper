@@ -51,7 +51,7 @@ public class BookshelfChatListener implements Listener {
 
                 TeamMessageEvent teamMessageEvent = new TeamMessageEvent(player, MiniMessageHelper.serialize(event.message()));
                 if (teamMessageEvent.callEvent()) {
-                    Component prefix = MiniMessageHelper.deserialize("<green><bold>TEAM » ");
+                    Component prefix = MiniMessageHelper.deserialize(plugin.text(player, "lead.chat.prefix"));
                     Component teamLabel = ctx.replaceAsComponent("<reset><font:<font>><<teamColor>><teamName></font><colorNames> ");
                     Component messageColor = ctx.replaceAsComponent("<playerName>: <message>");
 
