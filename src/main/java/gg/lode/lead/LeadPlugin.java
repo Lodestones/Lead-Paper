@@ -50,6 +50,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -60,6 +63,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     }
     private static final int CONFIG_VERSION = 16;
     private static final String TEAMLESS_ID = "TEAMLESS";
+    private static final long TEXTURE_FLUSH_TICKS = 20L * 60;
     public static Random SEED = new Random();
     private final HashMap<UUID, ITeam> teams = new HashMap<>();
     private final HashMap<String, UUID> teamByPlayer = new HashMap<>();
@@ -67,6 +71,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     private final HashMap<String, ITeam> teamsById = new HashMap<>();
     private final HashMap<UUID, String> textureCache = new HashMap<>();
     private final Object saveLock = new Object();
+    private final Object textureSaveLock = new Object();
+    private volatile boolean texturesDirty;
     private Configuration config;
     private Configuration team;
     private Configuration random;
@@ -141,6 +147,8 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         this.registerCommands();
         this.reload(true);
 
+        Task.timer(this, () -> flushTextures(true), TEXTURE_FLUSH_TICKS, TEXTURE_FLUSH_TICKS);
+
         if (getServer().getPluginManager().isPluginEnabled("Bookshelf")) {
             getServer().getPluginManager().registerEvents(new BookshelfChatListener(this), this);
             getLogger().warning("Hooked into Bookshelf's Chat Manager!");
@@ -203,10 +211,40 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
         return random;
     }
 
+    /**
+     * Remembers a skin for offline skull rendering. Called on every join, so it never touches the
+     * disk itself: an unchanged skin is a no-op, and a changed one waits for the next flush.
+     */
     public void cacheTexture(UUID uuid, String textureValue) {
-        textureCache.put(uuid, textureValue);
-        textures.set(uuid.toString(), textureValue);
-        textures.save();
+        if (textureValue.equals(textureCache.put(uuid, textureValue))) return;
+        texturesDirty = true;
+    }
+
+    /**
+     * Writes the skin cache out if anything changed. The file holds every player ever seen, so
+     * turning it into YAML is the slow part and runs off the main thread on a copy of the map.
+     */
+    private void flushTextures(boolean async) {
+        if (!texturesDirty) return;
+        texturesDirty = false;
+        Map<UUID, String> snapshot = new HashMap<>(textureCache);
+        if (async) Task.runAsync(this, () -> writeTextures(snapshot));
+        else writeTextures(snapshot);
+    }
+
+    private void writeTextures(Map<UUID, String> snapshot) {
+        synchronized (textureSaveLock) {
+            YamlConfiguration yaml = new YamlConfiguration();
+            snapshot.forEach((uuid, texture) -> yaml.set(uuid.toString(), texture));
+            File file = new File(getDataFolder(), "textures.yml");
+            File temp = new File(getDataFolder(), "textures.yml.tmp");
+            try {
+                yaml.save(temp);
+                Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                getLogger().warning("Could not save textures.yml: " + e.getMessage());
+            }
+        }
     }
 
     @Nullable
@@ -243,6 +281,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     public void onDisable() {
         if (frameHook != null) frameHook.clear();
         this.save();
+        flushTextures(false);
     }
 
     @Override
