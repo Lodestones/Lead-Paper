@@ -11,6 +11,7 @@ import gg.lode.frameapi.api.tablist.TabEntry;
 import gg.lode.lead.LeadPlugin;
 import gg.lode.lead.team.TeamAlignment;
 import gg.lode.leadapi.api.ITeam;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
@@ -45,11 +46,12 @@ public class FrameHook {
      * @param playerTeamMap resolved player-to-team map for this refresh.
      * @param alignment     whether the label renders as a prefix or suffix.
      * @param colorNames    whether the player's own name is tinted the team colour.
+     * @param replaceRank   whether the team tag replaces the rank prefix rather than sitting beside it.
      * @param font          the MiniMessage font applied to the label.
      * @param onlinePlayers the players to render.
      */
     public void render(Map<UUID, ITeam> playerTeamMap, TeamAlignment alignment, boolean colorNames,
-                       String font, Iterable<? extends Player> onlinePlayers) {
+                       boolean replaceRank, String font, Iterable<? extends Player> onlinePlayers) {
         for (Player player : onlinePlayers) {
             ITeam team = playerTeamMap.get(player.getUniqueId());
             if (team == null) {
@@ -57,12 +59,13 @@ public class FrameHook {
                 layer.setNameTag(player, null);
                 continue;
             }
-            layer.setTabEntry(player, buildTabEntry(player, team, alignment, colorNames, font));
+            layer.setTabEntry(player, buildTabEntry(player, team, alignment, colorNames, replaceRank, font));
             layer.setNameTag(player, buildNameTag(team, alignment, font));
         }
     }
 
-    private TabEntry buildTabEntry(Player player, ITeam team, TeamAlignment alignment, boolean colorNames, String font) {
+    private TabEntry buildTabEntry(Player player, ITeam team, TeamAlignment alignment, boolean colorNames,
+                                   boolean replaceRank, String font) {
         String label = label(team, font);
         String nameColor = colorNames ? team.getColor() : "white";
         String name = player.getName();
@@ -73,10 +76,13 @@ public class FrameHook {
                 ? String.format("<%s>%s %s", nameColor, name, label)
                 : String.format("%s <%s>%s", label, nameColor, name);
 
-        return TabEntry.builder()
+        TabEntry.Builder builder = TabEntry.builder()
                 .displayName(MiniMessageHelper.deserialize(display))
-                .sortKey(team.getId() + "_" + name)
-                .build();
+                .sortKey(team.getId() + "_" + name);
+        // An empty prefix still counts as set, so it outranks the rank prefix Frame's config layer
+        // draws from LuckPerms, which sits below this one.
+        if (replaceRank) builder.prefix(Component.empty());
+        return builder.build();
     }
 
     private NameTagStyle buildNameTag(ITeam team, TeamAlignment alignment, String font) {

@@ -67,7 +67,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
     public String getVersion() {
         return "v" + getDescription().getVersion();
     }
-    private static final int CONFIG_VERSION = 18;
+    private static final int CONFIG_VERSION = 19;
     private static final String[] BUNDLED_LOCALES = {
             "en_us", "es_es", "pt_br", "fr_fr", "de_de", "it_it", "nl_nl",
             "pl_pl", "ru_ru", "tr_tr", "ja_jp", "ko_kr", "zh_cn", "zh_tw"
@@ -130,6 +130,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                     config.set("selector_key", SelectorKey.ID.name());
                 }
                 case 17 -> config.set("language", "auto");
+                case 18 -> config.set("replace_rank_prefix", false);
             }
 
             // Recursively call this method to ensure all updates are applied
@@ -389,6 +390,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 String fontToUse = config().getString("font", "default");
                 TeamAlignment alignment = EnumHelper.fetchEnum(TeamAlignment.class, config().getString("team_alignment"), TeamAlignment.PREFIX);
                 boolean colorNames = config().getBoolean("color_names", false);
+                boolean replaceRankPrefix = config().getBoolean("replace_rank_prefix", false);
                 boolean verbose = config().getBoolean("verbose");
                 boolean selectorSupport = config().getBoolean("selector_support", true);
                 SelectorKey selectorKey = EnumHelper.fetchEnum(SelectorKey.class, config().getString("selector_key"), SelectorKey.ID);
@@ -397,7 +399,7 @@ public final class LeadPlugin extends JavaPlugin implements ILeadAPI {
                 Bukkit.getScheduler().runTask(this, () -> {
                     try {
                         if (isFramePresent && frameHook != null) {
-                            frameHook.render(playerTeamMap, alignment, colorNames, fontToUse, getServer().getOnlinePlayers());
+                            frameHook.render(playerTeamMap, alignment, colorNames, replaceRankPrefix, fontToUse, getServer().getOnlinePlayers());
 
                             // Frame owns the visuals; the scoreboard still backs @a[team=...] selectors.
                             if (selectorSupport)

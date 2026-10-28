@@ -78,6 +78,11 @@ color_names: false
 # LuckPerms rank prefixes still apply). Team chat (/team chat) is unaffected.
 show_in_chat: true
 
+# Should the team tag replace a player's rank prefix in the tab list?
+# If false, both show ("Mindful [1] Steve"). If true, only the team tag does ("[1] Steve").
+# Only applies with Frame installed, and only to players on a team.
+replace_rank_prefix: false
+
 # How many teams can be created?
 max_teams: 1000
 
